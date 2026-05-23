@@ -19,7 +19,7 @@ def admin_required(f):
     return decorated
 
 
-@users_bp.route('/dashboard')
+@users_bp.route('/')
 @login_required
 @admin_required
 def dashboard():
