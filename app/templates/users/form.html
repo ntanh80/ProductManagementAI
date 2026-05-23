@@ -45,7 +45,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">
-                                Mật khẩu{{ ' <span class="text-danger">*</span>' if not user else '' }}
+                                Mật khẩu{% if not user %} <span class="text-danger">*</span>{% endif %}
                                 {% if user %}
                                     <br><span class="text-muted fw-normal small">(Để trống nếu không đổi)</span>
                                 {% endif %}
