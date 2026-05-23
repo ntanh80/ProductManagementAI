@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python -c \"from app import app; print\\('App loaded successfully'\\)\")",
+      "Bash(python app.py)",
+      "Bash(curl *)",
+      "Bash(Remove-Item \"D:\\\\Google Driver\\\\AI Demo\\\\ProductManagementAI\\\\app.py\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Google Driver\\\\AI Demo\\\\ProductManagementAI\\\\models.py\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Google Driver\\\\AI Demo\\\\ProductManagementAI\\\\templates\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Google Driver\\\\AI Demo\\\\ProductManagementAI\\\\static\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item \"D:\\\\Google Driver\\\\AI Demo\\\\ProductManagementAI\\\\instance\\\\product_management.db\" -ErrorAction SilentlyContinue)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python -c \"from app import create_app; app = create_app\\(\\); print\\('App created successfully'\\)\")",
+      "Bash(python run.py)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Sản phẩm</h1>
+    <a href="{{ url_for('products.add') }}" class="btn btn-primary">+ Thêm sản phẩm</a>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Tên sản phẩm</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Nhóm sản phẩm</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ "{:,.0f}".format(product.price) }} đ</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.category.name }}</td>
+            <td>
+                <a href="{{ url_for('products.edit', id=product.id) }}" class="btn btn-sm btn-warning">Sửa</a>
+                <form action="{{ url_for('products.delete', id=product.id) }}" method="POST" class="d-inline"
+                      onsubmit="return confirm('Xóa sản phẩm này?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center text-muted">Chưa có sản phẩm nào.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

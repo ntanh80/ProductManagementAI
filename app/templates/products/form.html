@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ 'Sửa sản phẩm' if product else 'Thêm sản phẩm' }}</h1>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="name" class="form-label">Tên sản phẩm</label>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ product.name if product else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">Giá</label>
+        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0"
+               value="{{ product.price if product else '0' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="quantity" class="form-label">Số lượng</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" min="0"
+               value="{{ product.quantity if product else '0' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Nhóm sản phẩm</label>
+        <select class="form-select" id="category_id" name="category_id" required>
+            <option value="">-- Chọn nhóm --</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {{ 'selected' if product and product.category_id == cat.id else '' }}>
+                {{ cat.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">{{ 'Cập nhật' if product else 'Thêm' }}</button>
+    <a href="{{ url_for('products.list') }}" class="btn btn-secondary">Hủy</a>
+</form>
+{% endblock %}

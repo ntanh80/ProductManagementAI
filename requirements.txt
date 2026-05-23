@@ -1,0 +1,6 @@
+Flask>=3.0
+Flask-SQLAlchemy>=3.0
+python-dotenv>=1.0
+
+# Dev
+pytest>=8.0
