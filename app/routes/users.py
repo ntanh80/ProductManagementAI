@@ -47,17 +47,34 @@ def dashboard():
                            low_stock=low_stock)
 
 
+SORT_OPTIONS_USERS = {
+    'id': User.id,
+    'username': User.username,
+    'full_name': User.full_name,
+    'role': User.role,
+    'is_active': User.is_active,
+    'created_at': User.created_at,
+}
+
+
 @users_bp.route('/users')
 @login_required
 @admin_required
 def list():
     page = request.args.get('page', 1, type=int)
+    sort = request.args.get('sort', 'username')
+    order = request.args.get('order', 'asc')
     per_page = request.args.get('per_page', 10, type=int)
-    pagination = User.query.order_by(User.id).paginate(
+
+    sort_col = SORT_OPTIONS_USERS.get(sort, User.username)
+    if order == 'desc':
+        sort_col = sort_col.desc()
+
+    pagination = User.query.order_by(sort_col).paginate(
         page=page, per_page=per_page, error_out=False
     )
     return render_template('users/list.html', pagination=pagination,
-                           per_page=per_page)
+                           sort=sort, order=order, per_page=per_page)
 
 
 @users_bp.route('/users/add', methods=['GET', 'POST'])

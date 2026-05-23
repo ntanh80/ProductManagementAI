@@ -54,12 +54,12 @@ def test_register_duplicate(client):
 def test_user_cannot_access_admin(client):
     """Register a regular user and verify they cannot access user management."""
     client.post('/login', data={'username': 'admin', 'password': 'admin'})
-    client.post('/users/add', data={
+    client.post('/admin/users/add', data={
         'username': 'regular', 'password': 'pass', 'role': 'user',
     })
 
     client.get('/logout')
     client.post('/login', data={'username': 'regular', 'password': 'pass'})
 
-    resp = client.get('/users', follow_redirects=True)
+    resp = client.get('/admin/users', follow_redirects=True)
     assert 'không có quyền'.encode() in resp.data

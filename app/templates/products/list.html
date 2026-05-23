@@ -51,7 +51,7 @@
             <th>{{ sortable_header('Tên sản phẩm', 'name', sort, order, 'products.list', filter_kwargs) }}</th>
             <th>{{ sortable_header('Giá', 'price', sort, order, 'products.list', filter_kwargs) }}</th>
             <th>{{ sortable_header('Số lượng', 'quantity', sort, order, 'products.list', filter_kwargs) }}</th>
-            <th>Nhóm sản phẩm</th>
+            <th>{{ sortable_header('Nhóm sản phẩm', 'category', sort, order, 'products.list', filter_kwargs) }}</th>
             {% if current_user.has_role('admin') %}
             <th>Thao tác</th>
             {% endif %}

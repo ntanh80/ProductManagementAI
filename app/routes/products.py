@@ -12,6 +12,7 @@ SORT_OPTIONS = {
     'name': Product.name,
     'price': Product.price,
     'quantity': Product.quantity,
+    'category': Category.name,
 }
 
 
@@ -31,6 +32,8 @@ def list():
         query = query.filter(Product.name.ilike(f'%{search}%'))
     if category_id:
         query = query.filter(Product.category_id == category_id)
+    if sort == 'category':
+        query = query.join(Product.category)
 
     sort_col = SORT_OPTIONS.get(sort, Product.name)
     if order == 'desc':

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% from '_pagination.html' import render_pagination %}
+{% from '_pagination.html' import render_pagination, sortable_header %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Quản lý người dùng</h1>
+    <h1 class="h3"><i class="bi bi-people"></i> Quản lý người dùng</h1>
     <a href="{{ url_for('users.add') }}" class="btn btn-primary">+ Thêm người dùng</a>
 </div>
 
@@ -14,15 +14,15 @@
     {% endif %}
 </div>
 
-<table class="table table-bordered table-hover">
+<table class="table table-bordered table-hover bg-white">
     <thead class="table-dark">
         <tr>
-            <th>#</th>
-            <th>Tên đăng nhập</th>
-            <th>Họ tên</th>
-            <th>Vai trò</th>
-            <th>Kích hoạt</th>
-            <th>Ngày tạo</th>
+            <th>{{ sortable_header('#', 'id', sort, order, 'users.list') }}</th>
+            <th>{{ sortable_header('Tên đăng nhập', 'username', sort, order, 'users.list') }}</th>
+            <th>{{ sortable_header('Họ tên', 'full_name', sort, order, 'users.list') }}</th>
+            <th>{{ sortable_header('Vai trò', 'role', sort, order, 'users.list') }}</th>
+            <th>{{ sortable_header('Kích hoạt', 'is_active', sort, order, 'users.list') }}</th>
+            <th>{{ sortable_header('Ngày tạo', 'created_at', sort, order, 'users.list') }}</th>
             <th>Thao tác</th>
         </tr>
     </thead>
@@ -65,5 +65,5 @@
     </tbody>
 </table>
 
-{{ render_pagination(pagination, 'users.list', '', '', per_page) }}
+{{ render_pagination(pagination, 'users.list', sort, order, per_page) }}
 {% endblock %}
