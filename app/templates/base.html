@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="{{ current_lang or 'vi' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -103,45 +103,45 @@
     <ul class="navbar-nav sidebar sidebar-dark accordion bg-gradient-primary" id="accordionSidebar">
         <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('users.dashboard') }}">
             <div class="sidebar-brand-icon"><i class="fas fa-box"></i></div>
-            <div class="sidebar-brand-text mx-3">PM AI</div>
+            <div class="sidebar-brand-text mx-3">{{ _('PM AI') }}</div>
         </a>
         <hr class="sidebar-divider my-0">
         {% if current_user.has_permission('dashboard.view') %}
         <li class="nav-item {{ 'active' if ep == 'users.dashboard' }}">
             <a class="nav-link" href="{{ url_for('users.dashboard') }}">
-                <i class="fas fa-fw fa-tachometer-alt"></i> <span>Dashboard</span>
+                <i class="fas fa-fw fa-tachometer-alt"></i> <span>{{ _('Dashboard') }}</span>
             </a>
         </li>
         {% endif %}
         <hr class="sidebar-divider">
         <li class="nav-item {{ 'active' if ep.startswith('products.') }}">
             <a class="nav-link" href="{{ url_for('products.list') }}">
-                <i class="fas fa-fw fa-boxes"></i> <span>Sản phẩm</span>
+                <i class="fas fa-fw fa-boxes"></i> <span>{{ _('Sản phẩm') }}</span>
             </a>
         </li>
         <li class="nav-item {{ 'active' if ep.startswith('categories.') }}">
             <a class="nav-link" href="{{ url_for('categories.list') }}">
-                <i class="fas fa-fw fa-tags"></i> <span>Nhóm sản phẩm</span>
+                <i class="fas fa-fw fa-tags"></i> <span>{{ _('Nhóm sản phẩm') }}</span>
             </a>
         </li>
         {% if current_user.has_permission('inventory.view') %}
         <li class="nav-item {{ 'active' if ep.startswith('inventory.') }}">
             <a class="nav-link" href="{{ url_for('inventory.list') }}">
-                <i class="fas fa-fw fa-warehouse"></i> <span>Kho hàng</span>
+                <i class="fas fa-fw fa-warehouse"></i> <span>{{ _('Kho hàng') }}</span>
             </a>
         </li>
         {% endif %}
         {% if current_user.has_permission('users.view') %}
         <li class="nav-item {{ 'active' if ep.startswith('users.') and ep != 'users.dashboard' }}">
             <a class="nav-link" href="{{ url_for('users.list') }}">
-                <i class="fas fa-fw fa-users"></i> <span>Người dùng</span>
+                <i class="fas fa-fw fa-users"></i> <span>{{ _('Người dùng') }}</span>
             </a>
         </li>
         {% endif %}
         {% if current_user.has_permission('audit.view') %}
         <li class="nav-item {{ 'active' if ep.startswith('audit.') }}">
             <a class="nav-link" href="{{ url_for('audit.list') }}">
-                <i class="fas fa-fw fa-history"></i> <span>Nhật ký</span>
+                <i class="fas fa-fw fa-history"></i> <span>{{ _('Nhật ký') }}</span>
             </a>
         </li>
         {% endif %}
@@ -160,10 +160,25 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <ul class="navbar-nav ms-auto">
+                    <!-- Language Toggle -->
+                    <li class="nav-item dropdown no-arrow mx-1 d-flex align-items-center">
+                        <a class="nav-link dropdown-toggle py-0" href="#" role="button" data-bs-toggle="dropdown"
+                           style="font-size:0.8rem; font-weight:600;">
+                            {{ current_lang|upper }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                            {% for code, name in supported_languages.items() %}
+                            <a class="dropdown-item small {{ 'active' if code == current_lang }}"
+                               href="{{ url_for(request.endpoint, **dict(request.args, lang=code)) if request.endpoint else '#' }}">
+                                {{ name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </li>
                     <!-- Dark Mode Toggle -->
                     <li class="nav-item mx-1 d-flex align-items-center">
                         <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary border-0"
-                                title="Chuyển giao diện tối/sáng">
+                                title="{{ _('Chuyển giao diện tối/sáng') }}">
                             <i class="fas fa-moon" id="darkModeIcon"></i>
                         </button>
                     </li>
@@ -185,14 +200,14 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in">
                             <a class="dropdown-item" href="{{ url_for('auth.profile') }}">
-                                <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i> Hồ sơ
+                                <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i> {{ _('Hồ sơ') }}
                             </a>
                             <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
-                                <i class="fas fa-key fa-sm fa-fw me-2 text-gray-400"></i> Đổi mật khẩu
+                                <i class="fas fa-key fa-sm fa-fw me-2 text-gray-400"></i> {{ _('Đổi mật khẩu') }}
                             </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i> Đăng xuất
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i> {{ _('Đăng xuất') }}
                             </a>
                         </div>
                     </li>
@@ -203,17 +218,32 @@
 
 {% elif not current_user.is_authenticated %}
             <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                <a class="navbar-brand fw-bold ms-3" href="/"><i class="fas fa-box me-2"></i>ProductManagementAI</a>
+                <a class="navbar-brand fw-bold ms-3" href="/"><i class="fas fa-box me-2"></i>{{ _('ProductManagementAI') }}</a>
                 <ul class="navbar-nav ms-auto">
+                    <!-- Language Toggle -->
+                    <li class="nav-item dropdown no-arrow mx-1 d-flex align-items-center">
+                        <a class="nav-link dropdown-toggle py-0" href="#" role="button" data-bs-toggle="dropdown"
+                           style="font-size:0.8rem; font-weight:600;">
+                            {{ current_lang|upper }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                            {% for code, name in supported_languages.items() %}
+                            <a class="dropdown-item small {{ 'active' if code == current_lang }}"
+                               href="{{ url_for(request.endpoint, **dict(request.args, lang=code)) if request.endpoint else '#' }}">
+                                {{ name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </li>
                     <li class="nav-item mx-1 d-flex align-items-center">
                         <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary border-0"
-                                title="Chuyển giao diện tối/sáng">
+                                title="{{ _('Chuyển giao diện tối/sáng') }}">
                             <i class="fas fa-moon" id="darkModeIcon"></i>
                         </button>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                            <i class="fas fa-sign-in-alt me-1"></i> {{ _('Đăng nhập') }}
                         </a>
                     </li>
                 </ul>

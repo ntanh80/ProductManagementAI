@@ -29,6 +29,7 @@ def create_app(config_name=None):
     from app.routes.users import users_bp
     from app.routes.audit_log import audit_bp
     from app.routes.inventory import inventory_bp
+    from app.routes.api import api_bp
     from app.oauth import init_oauth
 
     app.register_blueprint(categories_bp, url_prefix='/admin')
@@ -37,6 +38,7 @@ def create_app(config_name=None):
     app.register_blueprint(users_bp, url_prefix='/admin')
     app.register_blueprint(audit_bp, url_prefix='/admin')
     app.register_blueprint(inventory_bp, url_prefix='/admin')
+    app.register_blueprint(api_bp)
 
     init_oauth(app)
 
@@ -48,6 +50,7 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_globals():
         from app.models import Product
+        from app.translations import translate, get_language, SUPPORTED_LANGUAGES
         from flask_login import current_user
         low_stock_count = 0
         if current_user.is_authenticated:
@@ -56,7 +59,13 @@ def create_app(config_name=None):
                     Product.quantity < 10).count()
             except Exception:
                 pass
-        return dict(low_stock_count=low_stock_count)
+        lang = get_language()
+        return dict(
+            low_stock_count=low_stock_count,
+            _=lambda t: translate(t, lang),
+            current_lang=lang,
+            supported_languages=SUPPORTED_LANGUAGES,
+        )
 
     with app.app_context():
         from app.models import User, Category, Product, AuditLog, StockTransaction  # noqa: F401
