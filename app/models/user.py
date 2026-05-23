@@ -10,9 +10,13 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     full_name = db.Column(db.String(100), default='')
+    email = db.Column(db.String(120), default='')
+    phone = db.Column(db.String(20), default='')
     role = db.Column(db.String(20), nullable=False, default='user')
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    last_login = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

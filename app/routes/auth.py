@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.extensions import db
@@ -16,10 +17,15 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
-            login_user(user)
-            next_page = request.args.get('next')
-            flash('Đăng nhập thành công!', 'success')
-            return redirect(next_page or url_for('users.dashboard'))
+            if not user.is_active:
+                flash('Tài khoản đã bị khóa.', 'danger')
+            else:
+                user.last_login = datetime.now()
+                db.session.commit()
+                login_user(user)
+                next_page = request.args.get('next')
+                flash('Đăng nhập thành công!', 'success')
+                return redirect(next_page or url_for('users.dashboard'))
         flash('Sai tên đăng nhập hoặc mật khẩu.', 'danger')
     return render_template('auth/login.html')
 
@@ -42,6 +48,7 @@ def register():
         password = request.form['password']
         confirm = request.form.get('confirm', '')
         full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
 
         if not username or not password:
             flash('Vui lòng nhập đầy đủ thông tin.', 'danger')
@@ -50,7 +57,7 @@ def register():
         elif User.query.filter_by(username=username).first():
             flash('Tên đăng nhập đã tồn tại.', 'danger')
         else:
-            user = User(username=username, full_name=full_name, role='user')
+            user = User(username=username, full_name=full_name, email=email, role='user')
             user.set_password(password)
             db.session.add(user)
             db.session.commit()

@@ -3,10 +3,111 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3"><i class="fas fa-users"></i> Quản lý người dùng</h1>
-    <a href="{{ url_for('users.add') }}" class="btn btn-primary">+ Thêm người dùng</a>
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-users"></i> Quản lý người dùng</h1>
+    <a href="{{ url_for('users.add') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus"></i> Thêm người dùng
+    </a>
 </div>
 
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body py-3">
+                <div class="row g-0 align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Tổng người dùng</div>
+                        <div class="h4 mb-0 fw-bold text-gray-800">{{ total_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body py-3">
+                <div class="row g-0 align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Đang hoạt động</div>
+                        <div class="h4 mb-0 fw-bold text-gray-800">{{ active_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-check fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body py-3">
+                <div class="row g-0 align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Quản trị viên</div>
+                        <div class="h4 mb-0 fw-bold text-gray-800">{{ admin_count }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-shield fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body py-3">
+                <div class="row g-0 align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Đã khóa</div>
+                        <div class="h4 mb-0 fw-bold text-gray-800">{{ total_users - active_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-lock fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small mb-1">Tìm kiếm</label>
+                <input type="text" class="form-control form-control-sm" name="search"
+                       placeholder="Tên đăng nhập, họ tên, email..." value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Vai trò</label>
+                <select class="form-select form-select-sm" name="role">
+                    <option value="">Tất cả</option>
+                    <option value="admin" {{ 'selected' if role_filter == 'admin' }}>Admin</option>
+                    <option value="user" {{ 'selected' if role_filter == 'user' }}>User</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Trạng thái</label>
+                <select class="form-select form-select-sm" name="status">
+                    <option value="">Tất cả</option>
+                    <option value="active" {{ 'selected' if status_filter == 'active' }}>Hoạt động</option>
+                    <option value="inactive" {{ 'selected' if status_filter == 'inactive' }}>Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                    <i class="fas fa-search"></i> Lọc
+                </button>
+                <a href="{{ url_for('users.list') }}" class="btn btn-secondary btn-sm flex-fill">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
+            </div>
+            {% for key in ['sort', 'order', 'per_page'] %}
+                {% if request.args.get(key) %}
+                    <input type="hidden" name="{{ key }}" value="{{ request.args.get(key) }}">
+                {% endif %}
+            {% endfor %}
+        </form>
+    </div>
+</div>
+
+<!-- User count -->
 <div class="mb-2 text-muted small">
     Tổng số: <strong>{{ pagination.total }}</strong> người dùng
     {% if pagination.pages > 1 %}
@@ -14,56 +115,107 @@
     {% endif %}
 </div>
 
-<table class="table table-bordered table-hover bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>{{ sortable_header('#', 'id', sort, order, 'users.list') }}</th>
-            <th>{{ sortable_header('Tên đăng nhập', 'username', sort, order, 'users.list') }}</th>
-            <th>{{ sortable_header('Họ tên', 'full_name', sort, order, 'users.list') }}</th>
-            <th>{{ sortable_header('Vai trò', 'role', sort, order, 'users.list') }}</th>
-            <th>{{ sortable_header('Kích hoạt', 'is_active', sort, order, 'users.list') }}</th>
-            <th>{{ sortable_header('Ngày tạo', 'created_at', sort, order, 'users.list') }}</th>
-            <th>Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in pagination.items %}
-        <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.full_name or '' }}</td>
-            <td>
-                {% if user.has_role('admin') %}
-                    <span class="badge bg-warning text-dark">Admin</span>
+<!-- Users Table -->
+<div class="card shadow-sm">
+    <div class="table-responsive mb-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:45px;">{{ sortable_header('#', 'id', sort, order, 'users.list', filter_kwargs) }}</th>
+                    <th>Người dùng</th>
+                    <th>{{ sortable_header('Email', 'email', sort, order, 'users.list', filter_kwargs) }}</th>
+                    <th>{{ sortable_header('Vai trò', 'role', sort, order, 'users.list', filter_kwargs) }}</th>
+                    <th>{{ sortable_header('Trạng thái', 'is_active', sort, order, 'users.list', filter_kwargs) }}</th>
+                    <th>{{ sortable_header('Lần cuối', 'last_login', sort, order, 'users.list', filter_kwargs) }}</th>
+                    <th style="width:160px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in pagination.items %}
+                <tr>
+                    <td class="text-muted small">{{ user.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-circle {{ 'bg-primary' if user.has_role('admin') else 'bg-secondary' }}">
+                                {{ (user.full_name or user.username)[:1].upper() }}
+                            </div>
+                            <div>
+                                <div class="fw-semibold small">{{ user.full_name or user.username }}</div>
+                                <div class="text-muted small">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.email %}
+                            <span class="small">{{ user.email }}</span>
+                        {% else %}
+                            <span class="text-muted small">&mdash;</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.has_role('admin') %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-crown"></i> Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary"><i class="fas fa-user"></i> User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Hoạt động</span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="fas fa-ban"></i> Đã khóa</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">
+                        {% if user.last_login %}
+                            {{ user.last_login.strftime('%d/%m/%Y %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">Chưa đăng nhập</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ url_for('users.edit', id=user.id) }}"
+                               class="btn btn-sm btn-outline-primary" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if user.id != current_user.id %}
+                            <form action="{{ url_for('users.delete', id=user.id) }}"
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Xóa người dùng {{ user.username }}?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
                 {% else %}
-                    <span class="badge bg-secondary">User</span>
-                {% endif %}
-            </td>
-            <td>
-                {% if user.is_active %}
-                    <span class="badge bg-success">Hoạt động</span>
-                {% else %}
-                    <span class="badge bg-danger">Khóa</span>
-                {% endif %}
-            </td>
-            <td>{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '' }}</td>
-            <td>
-                <a href="{{ url_for('users.edit', id=user.id) }}" class="btn btn-sm btn-warning">Sửa</a>
-                {% if user.id != current_user.id %}
-                <form action="{{ url_for('users.delete', id=user.id) }}" method="POST" class="d-inline"
-                      onsubmit="return confirm('Xóa người dùng {{ user.username }}?')">
-                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7" class="text-center text-muted">Chưa có người dùng nào.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                        Không tìm thấy người dùng nào.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-white py-3">
+        {{ render_pagination(pagination, 'users.list', sort, order, per_page, filter_kwargs) }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
 
-{{ render_pagination(pagination, 'users.list', sort, order, per_page) }}
+{% block scripts %}
+<style>
+.avatar-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+</style>
 {% endblock %}

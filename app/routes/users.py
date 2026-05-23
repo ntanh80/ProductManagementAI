@@ -33,12 +33,15 @@ def dashboard():
     top_products = Product.query.order_by(Product.quantity.desc()).limit(5).all()
     recent_products = Product.query.order_by(Product.id.desc()).limit(5).all()
     low_stock = Product.query.filter(Product.quantity < 10).count()
+    total_users = User.query.count()
+    active_users = User.query.filter(User.is_active == True).count()
 
     return render_template('dashboard.html',
                            now=datetime.now().strftime('%d/%m/%Y %H:%M'),
                            total_products=Product.query.count(),
                            total_categories=len(categories),
-                           total_users=User.query.count(),
+                           total_users=total_users,
+                           active_users=active_users,
                            total_value=total_value,
                            chart_labels=chart_labels,
                            chart_counts=chart_counts,
@@ -51,9 +54,11 @@ SORT_OPTIONS_USERS = {
     'id': User.id,
     'username': User.username,
     'full_name': User.full_name,
+    'email': User.email,
     'role': User.role,
     'is_active': User.is_active,
     'created_at': User.created_at,
+    'last_login': User.last_login,
 }
 
 
@@ -65,16 +70,52 @@ def list():
     sort = request.args.get('sort', 'username')
     order = request.args.get('order', 'asc')
     per_page = request.args.get('per_page', 10, type=int)
+    search = request.args.get('search', '').strip()
+    role_filter = request.args.get('role', '')
+    status_filter = request.args.get('status', '')
+
+    query = User.query
+
+    if search:
+        query = query.filter(
+            db.or_(User.username.ilike(f'%{search}%'),
+                   User.full_name.ilike(f'%{search}%'),
+                   User.email.ilike(f'%{search}%'))
+        )
+    if role_filter:
+        query = query.filter(User.role == role_filter)
+    if status_filter == 'active':
+        query = query.filter(User.is_active == True)
+    elif status_filter == 'inactive':
+        query = query.filter(User.is_active == False)
 
     sort_col = SORT_OPTIONS_USERS.get(sort, User.username)
     if order == 'desc':
         sort_col = sort_col.desc()
 
-    pagination = User.query.order_by(sort_col).paginate(
+    pagination = query.order_by(sort_col).paginate(
         page=page, per_page=per_page, error_out=False
     )
+
+    total_users = User.query.count()
+    active_users = User.query.filter(User.is_active == True).count()
+    admin_count = User.query.filter(User.role == 'admin').count()
+
+    filter_kwargs = {}
+    if search:
+        filter_kwargs['search'] = search
+    if role_filter:
+        filter_kwargs['role'] = role_filter
+    if status_filter:
+        filter_kwargs['status'] = status_filter
+
     return render_template('users/list.html', pagination=pagination,
-                           sort=sort, order=order, per_page=per_page)
+                           sort=sort, order=order, per_page=per_page,
+                           search=search, role_filter=role_filter,
+                           status_filter=status_filter,
+                           filter_kwargs=filter_kwargs,
+                           total_users=total_users, active_users=active_users,
+                           admin_count=admin_count)
 
 
 @users_bp.route('/users/add', methods=['GET', 'POST'])
@@ -85,6 +126,8 @@ def add():
         username = request.form['username'].strip()
         password = request.form['password']
         full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
         role = request.form.get('role', 'user')
 
         if not username or not password:
@@ -92,7 +135,8 @@ def add():
         elif User.query.filter_by(username=username).first():
             flash('Tên đăng nhập đã tồn tại.', 'danger')
         else:
-            user = User(username=username, full_name=full_name, role=role)
+            user = User(username=username, full_name=full_name, email=email,
+                        phone=phone, role=role)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
@@ -110,6 +154,8 @@ def edit(id):
     if request.method == 'POST':
         username = request.form['username'].strip()
         full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
         role = request.form.get('role', 'user')
         password = request.form.get('password', '')
 
@@ -120,6 +166,8 @@ def edit(id):
         else:
             user.username = username
             user.full_name = full_name
+            user.email = email
+            user.phone = phone
             user.role = role
             if password.strip():
                 user.set_password(password.strip())

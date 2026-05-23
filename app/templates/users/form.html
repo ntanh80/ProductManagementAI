@@ -1,34 +1,78 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{ 'Sửa người dùng' if user else 'Thêm người dùng' }}</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-{{ 'edit' if user else 'user-plus' }}"></i>
+        {{ 'Sửa người dùng' if user else 'Thêm người dùng' }}
+    </h1>
+    <a href="{{ url_for('users.list') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
 
-<form method="POST">
-    <div class="mb-3">
-        <label for="username" class="form-label">Tên đăng nhập</label>
-        <input type="text" class="form-control" id="username" name="username"
-               value="{{ user.username if user else '' }}" required>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-{{ 'user-cog' if user else 'user-plus' }}"></i>
+                    {{ 'Thông tin người dùng' if user else 'Tạo tài khoản mới' }}
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Tên đăng nhập <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="username"
+                                   value="{{ user.username if user else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Họ tên</label>
+                            <input type="text" class="form-control" name="full_name"
+                                   value="{{ user.full_name if user else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Email</label>
+                            <input type="email" class="form-control" name="email"
+                                   value="{{ user.email if user else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Số điện thoại</label>
+                            <input type="text" class="form-control" name="phone"
+                                   value="{{ user.phone if user else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">
+                                Mật khẩu{{ ' <span class="text-danger">*</span>' if not user else '' }}
+                                {% if user %}
+                                    <br><span class="text-muted fw-normal small">(Để trống nếu không đổi)</span>
+                                {% endif %}
+                            </label>
+                            <input type="password" class="form-control" name="password"
+                                   {{ 'required' if not user else '' }}>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Vai trò</label>
+                            <select class="form-select" name="role">
+                                <option value="user" {{ 'selected' if user and user.role == 'user' else '' }}>User</option>
+                                <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ 'Cập nhật' if user else 'Tạo mới' }}
+                        </button>
+                        <a href="{{ url_for('users.list') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="full_name" class="form-label">Họ tên</label>
-        <input type="text" class="form-control" id="full_name" name="full_name"
-               value="{{ user.full_name if user else '' }}">
-    </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">
-            Mật khẩu{{ ' (để trống nếu không đổi)' if user else '' }}
-        </label>
-        <input type="password" class="form-control" id="password" name="password"
-               {{ 'required' if not user else '' }}>
-    </div>
-    <div class="mb-3">
-        <label for="role" class="form-label">Vai trò</label>
-        <select class="form-select" id="role" name="role">
-            <option value="user" {{ 'selected' if user and user.role == 'user' else '' }}>User</option>
-            <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>Admin</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-success">{{ 'Cập nhật' if user else 'Thêm' }}</button>
-    <a href="{{ url_for('users.list') }}" class="btn btn-secondary">Hủy</a>
-</form>
+</div>
 {% endblock %}
