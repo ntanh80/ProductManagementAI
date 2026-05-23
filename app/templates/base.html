@@ -10,10 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet">
     <style>
         html { font-size: 14px; }
+        :root { --sidebar-width: 224px; }
         .sidebar .nav-link { padding: 0.5rem 1rem; font-size: 0.9rem; }
         .sidebar .nav-link i { font-size: 0.85rem; }
-        .sidebar-dark .nav-link { color: rgba(255,255,255,0.6); }
-        .sidebar-dark .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .sidebar .sidebar-brand .sidebar-brand-text { font-size: 0.85rem; }
         .sidebar .sidebar-brand-icon { font-size: 0.8rem; }
         .topbar .dropdown-menu { margin-top: 0; }
@@ -35,8 +34,62 @@
         h5 { font-size: 0.9rem; }
         h6 { font-size: 0.85rem; }
         .display-4 { font-size: 1.75rem; }
-        .sb-admin-card { font-size: 0.85rem; }
         .sidebar-heading { font-size: 0.65rem; }
+        #wrapper #content-wrapper { min-height: 100vh; }
+
+        /* ── Dark Mode ── */
+        body.dark-mode, body.dark-mode #page-top { background: #1a1d21; }
+        body.dark-mode #wrapper #content-wrapper { background: #1e2227; }
+        body.dark-mode #content { background: #1e2227; }
+        body.dark-mode .topbar { background: #2c3036 !important; border-color: #3a3f47 !important; }
+        body.dark-mode .topbar .nav-link { color: #c2c7d0 !important; }
+        body.dark-mode .topbar .text-gray-600 { color: #c2c7d0 !important; }
+        body.dark-mode .topbar-divider { border-color: #3a3f47 !important; }
+        body.dark-mode .dropdown-menu { background: #2c3036; border-color: #3a3f47; }
+        body.dark-mode .dropdown-item { color: #c2c7d0; }
+        body.dark-mode .dropdown-item:hover { background: #3a3f47; color: #fff; }
+        body.dark-mode .dropdown-divider { border-color: #3a3f47; }
+        body.dark-mode .sidebar-dark { background: #212529 !important; }
+        body.dark-mode .sidebar-dark .nav-link { color: rgba(255,255,255,0.55); }
+        body.dark-mode .sidebar-dark .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        body.dark-mode .sidebar-dark .nav-link.active { color: #fff; }
+        body.dark-mode .sidebar .sidebar-brand { background: rgba(0,0,0,0.15); }
+        body.dark-mode .card { background: #2c3036; border-color: #3a3f47; }
+        body.dark-mode .card-header { background: #2c3036; border-color: #3a3f47; color: #c2c7d0; }
+        body.dark-mode .card-footer { background: #2c3036; border-color: #3a3f47; }
+        body.dark-mode .table { color: #c2c7d0; border-color: #3a3f47; }
+        body.dark-mode .table > :not(caption) > * > * { background: #2c3036; border-color: #3a3f47; color: #c2c7d0; }
+        body.dark-mode .table-light { --bs-table-bg: #343840; --bs-table-color: #c2c7d0; }
+        body.dark-mode .table-hover tbody tr:hover > * { background: #3a3f47 !important; }
+        body.dark-mode .table-responsive { border-color: #3a3f47; }
+        body.dark-mode .form-control, body.dark-mode .form-select { background: #1e2227; border-color: #3a3f47; color: #c2c7d0; }
+        body.dark-mode .form-control:focus, body.dark-mode .form-select:focus { background: #1e2227; color: #c2c7d0; }
+        body.dark-mode .input-group-text { background: #343840; border-color: #3a3f47; color: #c2c7d0; }
+        body.dark-mode .form-label { color: #c2c7d0; }
+        body.dark-mode .page-link { background: #2c3036; border-color: #3a3f47; color: #c2c7d0; }
+        body.dark-mode .page-link:hover { background: #3a3f47; color: #fff; }
+        body.dark-mode .page-item.active .page-link { background: #4e73df; border-color: #4e73df; }
+        body.dark-mode .page-item.disabled .page-link { background: #2c3036; color: #6c757d; }
+        body.dark-mode .text-muted { color: #9ca3af !important; }
+        body.dark-mode .text-gray-600 { color: #9ca3af !important; }
+        body.dark-mode .bg-white { background: #2c3036 !important; }
+        body.dark-mode .border-top, body.dark-mode .border-bottom { border-color: #3a3f47 !important; }
+        body.dark-mode .footer { background: #2c3036 !important; }
+        body.dark-mode .sticky-footer { background: #2c3036 !important; border-color: #3a3f47 !important; }
+        body.dark-mode .copyright span { color: #9ca3af !important; }
+        body.dark-mode .btn-outline-secondary { color: #c2c7d0; border-color: #3a3f47; }
+        body.dark-mode .btn-outline-secondary:hover { background: #3a3f47; color: #fff; }
+        body.dark-mode .btn-secondary { background: #3a3f47; border-color: #3a3f47; }
+        body.dark-mode .alert { border-color: #3a3f47; }
+        body.dark-mode .modal-content { background: #2c3036; border-color: #3a3f47; }
+        body.dark-mode .modal-header, body.dark-mode .modal-footer { border-color: #3a3f47; }
+        body.dark-mode .btn-close { filter: invert(1); }
+        body.dark-mode .shadow, body.dark-mode .shadow-sm { box-shadow: 0 0.15rem 0.5rem rgba(0,0,0,0.3) !important; }
+        body.dark-mode .bg-primary { background-color: #4e73df !important; }
+        body.dark-mode .badge.bg-secondary { background-color: #495057 !important; }
+        body.dark-mode .badge.bg-success { background-color: #1a8044 !important; }
+        body.dark-mode .badge.bg-warning { color: #212529 !important; }
+        body.dark-mode .sidebar .badge { color: #fff !important; }
         @media (max-width: 768px) {
             .container-fluid { padding: 0 0.75rem; }
         }
@@ -107,6 +160,13 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <ul class="navbar-nav ms-auto">
+                    <!-- Dark Mode Toggle -->
+                    <li class="nav-item mx-1 d-flex align-items-center">
+                        <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary border-0"
+                                title="Chuyển giao diện tối/sáng">
+                            <i class="fas fa-moon" id="darkModeIcon"></i>
+                        </button>
+                    </li>
                     <!-- Low Stock Notification -->
                     <li class="nav-item dropdown no-arrow mx-1">
                         <a class="nav-link" href="{{ url_for('products.list', sort='quantity', order='asc') }}">
@@ -145,6 +205,12 @@
             <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                 <a class="navbar-brand fw-bold ms-3" href="/"><i class="fas fa-box me-2"></i>ProductManagementAI</a>
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item mx-1 d-flex align-items-center">
+                        <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary border-0"
+                                title="Chuyển giao diện tối/sáng">
+                            <i class="fas fa-moon" id="darkModeIcon"></i>
+                        </button>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">
                             <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
@@ -206,6 +272,36 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+<script>
+// ── Dark Mode ──
+(function() {
+    const KEY = 'darkMode';
+    const CLASS = 'dark-mode';
+    const icon = document.getElementById('darkModeIcon');
+
+    function apply(val) {
+        document.body.classList.toggle(CLASS, val);
+        localStorage.setItem(KEY, val ? '1' : '');
+        if (icon) {
+            icon.className = val ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    }
+
+    // Restore preference
+    const stored = localStorage.getItem(KEY);
+    if (stored === '1' || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        apply(true);
+    }
+
+    // Toggle on click
+    const btn = document.getElementById('darkModeToggle');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            apply(!document.body.classList.contains(CLASS));
+        });
+    }
+})();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
