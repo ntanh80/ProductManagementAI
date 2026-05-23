@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <span class="text-muted" id="current-date">{{ now }}</span>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1 opacity-75">Sản phẩm</h6>
+                        <h2 class="mb-0 fw-bold">{{ total_products }}</h2>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                </div>
+                <a href="{{ url_for('products.list') }}" class="text-white opacity-75 small text-decoration-none">
+                    Xem chi tiết &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1 opacity-75">Nhóm sản phẩm</h6>
+                        <h2 class="mb-0 fw-bold">{{ total_categories }}</h2>
+                    </div>
+                    <i class="bi bi-tags fs-1 opacity-50"></i>
+                </div>
+                <a href="{{ url_for('categories.list') }}" class="text-white opacity-75 small text-decoration-none">
+                    Xem chi tiết &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1 opacity-75">Người dùng</h6>
+                        <h2 class="mb-0 fw-bold">{{ total_users }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+                <a href="{{ url_for('users.list') }}" class="text-dark opacity-75 small text-decoration-none">
+                    Xem chi tiết &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1 opacity-75">Tổng giá trị kho</h6>
+                        <h2 class="mb-0 fw-bold fs-5">{{ "{:,.0f}".format(total_value) }}đ</h2>
+                    </div>
+                    <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+                </div>
+                <span class="text-white opacity-50 small">Tổng giá trị tồn kho</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart + Low Stock -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Sản phẩm theo nhóm</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm {{ 'border-danger' if low_stock > 0 else '' }}">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Tồn kho thấp</h5>
+            </div>
+            <div class="card-body text-center py-5">
+                {% if low_stock > 0 %}
+                <h1 class="display-3 text-danger fw-bold">{{ low_stock }}</h1>
+                <p class="text-muted">sản phẩm có số lượng &lt; 10</p>
+                <a href="{{ url_for('products.list', sort='quantity', order='asc') }}" class="btn btn-outline-danger btn-sm">
+                    Kiểm tra ngay
+                </a>
+                {% else %}
+                <h1 class="display-3 text-success fw-bold">0</h1>
+                <p class="text-muted">Tất cả sản phẩm đủ tồn kho</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Top 5 sản phẩm nhiều nhất</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Nhóm</th>
+                            <th class="text-end">Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in top_products %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ p.name }}</td>
+                            <td><span class="badge bg-secondary">{{ p.category.name }}</span></td>
+                            <td class="text-end fw-bold">{{ p.quantity }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted">Chưa có sản phẩm</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Sản phẩm mới nhất</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá</th>
+                            <th class="text-end">Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_products %}
+                        <tr>
+                            <td>{{ p.id }}</td>
+                            <td>{{ p.name }}</td>
+                            <td>{{ "{:,.0f}".format(p.price) }}đ</td>
+                            <td class="text-end">{{ p.quantity }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted">Chưa có sản phẩm</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-lightning"></i> Thao tác nhanh</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('products.add') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Thêm sản phẩm
+            </a>
+            <a href="{{ url_for('categories.add') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Thêm nhóm sản phẩm
+            </a>
+            <a href="{{ url_for('users.add') }}" class="btn btn-warning">
+                <i class="bi bi-person-plus"></i> Thêm người dùng
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const labels = {{ chart_labels|tojson }};
+    const counts = {{ chart_counts|tojson }};
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Số sản phẩm',
+                data: counts,
+                backgroundColor: [
+                    '#0d6efd', '#198754', '#ffc107', '#dc3545',
+                    '#0dcaf0', '#6610f2', '#fd7e14', '#20c997',
+                    '#d63384', '#6f42c1'
+                ],
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

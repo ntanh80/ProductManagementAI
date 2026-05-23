@@ -1,30 +1,71 @@
 {% extends 'base.html' %}
+{% from '_pagination.html' import render_pagination, sortable_header %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Sản phẩm</h1>
+    {% if current_user.has_role('admin') %}
     <a href="{{ url_for('products.add') }}" class="btn btn-primary">+ Thêm sản phẩm</a>
+    {% endif %}
+</div>
+
+{% set filter_kwargs = {'search': search, 'category_id': category_id} %}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" class="row g-2">
+            <div class="col-md-5">
+                <input type="text" class="form-control" name="search" placeholder="Tìm kiếm sản phẩm..."
+                       value="{{ search }}" autofocus>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="category_id">
+                    <option value="0">-- Tất cả nhóm --</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {{ 'selected' if category_id == cat.id }}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-2 text-muted small">
+    Tổng số: <strong>{{ pagination.total }}</strong> sản phẩm
+    {% if pagination.pages > 1 %}
+        &middot; Trang {{ pagination.page }} / {{ pagination.pages }}
+    {% endif %}
 </div>
 
 <table class="table table-bordered table-hover">
     <thead class="table-dark">
         <tr>
-            <th>#</th>
-            <th>Tên sản phẩm</th>
-            <th>Giá</th>
-            <th>Số lượng</th>
+            <th>{{ sortable_header('#', 'id', sort, order, 'products.list', filter_kwargs) }}</th>
+            <th>{{ sortable_header('Tên sản phẩm', 'name', sort, order, 'products.list', filter_kwargs) }}</th>
+            <th>{{ sortable_header('Giá', 'price', sort, order, 'products.list', filter_kwargs) }}</th>
+            <th>{{ sortable_header('Số lượng', 'quantity', sort, order, 'products.list', filter_kwargs) }}</th>
             <th>Nhóm sản phẩm</th>
+            {% if current_user.has_role('admin') %}
             <th>Thao tác</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
-        {% for product in products %}
+        {% for product in pagination.items %}
         <tr>
             <td>{{ product.id }}</td>
             <td>{{ product.name }}</td>
             <td>{{ "{:,.0f}".format(product.price) }} đ</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.category.name }}</td>
+            {% if current_user.has_role('admin') %}
             <td>
                 <a href="{{ url_for('products.edit', id=product.id) }}" class="btn btn-sm btn-warning">Sửa</a>
                 <form action="{{ url_for('products.delete', id=product.id) }}" method="POST" class="d-inline"
@@ -32,12 +73,15 @@
                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                 </form>
             </td>
+            {% endif %}
         </tr>
         {% else %}
         <tr>
-            <td colspan="6" class="text-center text-muted">Chưa có sản phẩm nào.</td>
+            <td colspan="{{ '6' if current_user.has_role('admin') else '5' }}" class="text-center text-muted">Chưa có sản phẩm nào.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{{ render_pagination(pagination, 'products.list', sort, order, per_page, filter_kwargs) }}
 {% endblock %}

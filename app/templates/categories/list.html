@@ -1,28 +1,41 @@
 {% extends 'base.html' %}
+{% from '_pagination.html' import render_pagination, sortable_header %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Nhóm sản phẩm</h1>
+    {% if current_user.has_role('admin') %}
     <a href="{{ url_for('categories.add') }}" class="btn btn-primary">+ Thêm nhóm</a>
+    {% endif %}
+</div>
+
+<div class="mb-2 text-muted small">
+    Tổng số: <strong>{{ pagination.total }}</strong> nhóm
+    {% if pagination.pages > 1 %}
+        &middot; Trang {{ pagination.page }} / {{ pagination.pages }}
+    {% endif %}
 </div>
 
 <table class="table table-bordered table-hover">
     <thead class="table-dark">
         <tr>
-            <th>#</th>
-            <th>Tên nhóm</th>
-            <th>Mô tả</th>
+            <th>{{ sortable_header('#', 'id', sort, order, 'categories.list') }}</th>
+            <th>{{ sortable_header('Tên nhóm', 'name', sort, order, 'categories.list') }}</th>
+            <th>{{ sortable_header('Mô tả', 'description', sort, order, 'categories.list') }}</th>
             <th>Số sản phẩm</th>
+            {% if current_user.has_role('admin') %}
             <th>Thao tác</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
-        {% for category in categories %}
+        {% for category in pagination.items %}
         <tr>
             <td>{{ category.id }}</td>
             <td>{{ category.name }}</td>
             <td>{{ category.description or '' }}</td>
             <td>{{ category.products|length }}</td>
+            {% if current_user.has_role('admin') %}
             <td>
                 <a href="{{ url_for('categories.edit', id=category.id) }}" class="btn btn-sm btn-warning">Sửa</a>
                 <form action="{{ url_for('categories.delete', id=category.id) }}" method="POST" class="d-inline"
@@ -30,12 +43,15 @@
                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                 </form>
             </td>
+            {% endif %}
         </tr>
         {% else %}
         <tr>
-            <td colspan="5" class="text-center text-muted">Chưa có nhóm sản phẩm nào.</td>
+            <td colspan="{{ '5' if current_user.has_role('admin') else '4' }}" class="text-center text-muted">Chưa có nhóm sản phẩm nào.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+{{ render_pagination(pagination, 'categories.list', sort, order, per_page) }}
 {% endblock %}

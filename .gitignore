@@ -9,3 +9,4 @@ instance/
 *.egg-info/
 dist/
 build/
+seed.py
