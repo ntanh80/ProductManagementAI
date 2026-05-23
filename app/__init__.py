@@ -21,10 +21,10 @@ def create_app(config_name=None):
     from app.routes.auth import auth_bp
     from app.routes.users import users_bp
 
-    app.register_blueprint(categories_bp)
-    app.register_blueprint(products_bp)
+    app.register_blueprint(categories_bp, url_prefix='/admin')
+    app.register_blueprint(products_bp, url_prefix='/admin')
     app.register_blueprint(auth_bp)
-    app.register_blueprint(users_bp)
+    app.register_blueprint(users_bp, url_prefix='/admin')
 
     @app.route('/')
     def index():
