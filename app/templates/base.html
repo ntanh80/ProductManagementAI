@@ -4,110 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quản lý Sản phẩm</title>
-    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.0/css/sb-admin-2.min.css" rel="stylesheet">
     <style>
-        :root {
-            --sidebar-width: 224px;
-            --sidebar-collapsed: 70px;
-            --topbar-height: 56px;
-            --blue: #4e73df;
-            --green: #1cc88a;
-            --cyan: #36b9cc;
-            --yellow: #f6c23e;
-            --gray-100: #f8f9fc;
-            --gray-300: #dddfeb;
-            --gray-600: #858796;
-            --gray-800: #5a5c69;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Nunito', sans-serif; background: var(--gray-100); font-size: 0.9rem; }
-        #wrapper { display: flex; min-height: 100vh; }
-
-        .sidebar {
-            width: var(--sidebar-width); background: #1a1d23; min-height: 100vh;
-            transition: width 0.25s ease; display: flex; flex-direction: column;
-            position: fixed; top: 0; left: 0; bottom: 0; z-index: 1020;
-            overflow: hidden; list-style: none; padding: 0;
-        }
-        .sidebar.collapsed { width: var(--sidebar-collapsed); }
-        .sidebar-brand {
-            padding: 1rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .sidebar-brand a {
-            color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 800;
-            letter-spacing: 0.5px; white-space: nowrap;
-        }
-        .sidebar.collapsed .sidebar-brand span { display: none; }
-        .sidebar .nav-item { width: 100%; }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.6); padding: 0.75rem 1rem;
-            display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
-            white-space: nowrap; border-left: 3px solid transparent; transition: all 0.15s;
-            font-size: 0.9rem;
-        }
-        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .sidebar .nav-link.active { color: #fff; background: rgba(78,115,223,0.12); border-left-color: var(--blue); }
-        .sidebar .nav-link i { font-size: 1rem; min-width: 1.5rem; text-align: center; }
-        .sidebar.collapsed .nav-link span { display: none; }
-        .sidebar-divider { border-top: 1px solid rgba(255,255,255,0.08); margin: 0.5rem 1rem; }
-        .sidebar-footer {
-            padding: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .sidebar-footer button {
-            background: none; border: none; color: rgba(255,255,255,0.6);
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.5rem 0.75rem; width: 100%; cursor: pointer;
-            font-size: 0.85rem; border-radius: 4px;
-        }
-        .sidebar-footer button:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .sidebar.collapsed .sidebar-footer button span { display: none; }
-        .sidebar.collapsed #collapseIcon { transform: rotate(180deg); }
-
-        #content-wrapper {
-            flex: 1; margin-left: var(--sidebar-width); display: flex;
-            flex-direction: column; min-height: 100vh; transition: margin-left 0.25s ease;
-        }
-        #content-wrapper.expanded { margin-left: var(--sidebar-collapsed); }
-
-        .topbar {
-            height: var(--topbar-height); background: #fff;
-            box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,0.08);
-            display: flex; align-items: center; padding: 0 1.25rem;
-            position: sticky; top: 0; z-index: 1010;
-        }
-        .topbar #sidebarToggleTop {
-            background: none; border: none; color: var(--gray-600);
-            font-size: 1.2rem; cursor: pointer; padding: 0.25rem; margin-right: 0.5rem;
-        }
-        .topbar #sidebarToggleTop:hover { color: var(--blue); }
-        #content { flex: 1; padding: 1.5rem; }
-        .sticky-footer { padding: 1rem 0; text-align: center; background: #fff; }
-
-        .border-left-primary { border-left: 0.25rem solid var(--blue) !important; }
-        .border-left-success { border-left: 0.25rem solid var(--green) !important; }
-        .border-left-info { border-left: 0.25rem solid var(--cyan) !important; }
-        .border-left-warning { border-left: 0.25rem solid var(--yellow) !important; }
-        .text-gray-300 { color: var(--gray-300); }
-        .text-gray-600 { color: var(--gray-600); }
-        .text-gray-800 { color: var(--gray-800); }
-        .shadow { box-shadow: 0 0.15rem 1.75rem rgba(58,59,69,0.1) !important; }
-        .shadow-sm { box-shadow: 0 0.125rem 0.25rem rgba(58,59,69,0.08) !important; }
-
-        .scroll-to-top {
-            position: fixed; bottom: 1rem; right: 1rem; z-index: 1050;
-            width: 2.5rem; height: 2.5rem; background: rgba(78,115,223,0.5);
-            color: #fff; border-radius: 50%; display: none; align-items: center;
-            justify-content: center; text-decoration: none; cursor: pointer; border: none;
-        }
-        .scroll-to-top:hover { color: #fff; background: var(--blue); }
-        .scroll-to-top.visible { display: flex; }
-
+        .sidebar .nav-link { padding: 0.75rem 1rem; }
+        .sidebar-dark .nav-link { color: rgba(255,255,255,0.6); }
+        .sidebar-dark .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .sidebar .sidebar-brand .sidebar-brand-text { font-size: 0.9rem; }
+        .topbar .dropdown-menu { margin-top: 0; }
+        #content { background: #f8f9fc; }
+        .container-fluid { padding: 0 1.5rem; }
         @media (max-width: 768px) {
-            .sidebar { left: calc(var(--sidebar-width) * -1); }
-            .sidebar.show { left: 0; }
-            #content-wrapper { margin-left: 0 !important; }
+            .container-fluid { padding: 0 0.75rem; }
         }
     </style>
 </head>
@@ -115,89 +25,139 @@
 {% if current_user.is_authenticated %}
 {% set ep = request.endpoint or '' %}
 <div id="wrapper">
-<ul class="sidebar" id="sidebar">
-    <li class="sidebar-brand"><a href="{{ url_for('users.dashboard') }}"><i class="bi bi-box"></i> <span>ProductManagementAI</span></a></li>
-    {% if current_user.has_role('admin') %}
-    <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'users.dashboard' }}" href="{{ url_for('users.dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
-    {% endif %}
-    <li class="nav-item"><a class="nav-link {{ 'active' if ep.startswith('products.') }}" href="{{ url_for('products.list') }}"><i class="bi bi-box-seam"></i> <span>Sản phẩm</span></a></li>
-    <li class="nav-item"><a class="nav-link {{ 'active' if ep.startswith('categories.') }}" href="{{ url_for('categories.list') }}"><i class="bi bi-tags"></i> <span>Nhóm sản phẩm</span></a></li>
-    {% if current_user.has_role('admin') %}
-    <li class="nav-item"><a class="nav-link {{ 'active' if ep.startswith('users.') and ep != 'users.dashboard' }}" href="{{ url_for('users.list') }}"><i class="bi bi-people"></i> <span>Người dùng</span></a></li>
-    {% endif %}
-    <li class="sidebar-divider"></li>
-    <li class="sidebar-footer"><button onclick="toggleSidebar()"><i class="bi bi-chevron-left" id="collapseIcon"></i><span>Thu gọn</span></button></li>
-</ul>
-<div id="content-wrapper">
-<nav class="topbar">
-    <button id="sidebarToggleTop" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-    <div class="ms-auto d-flex align-items-center">
-        <div class="dropdown">
-            <a class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" href="#" data-bs-toggle="dropdown">
-                <i class="bi bi-person-circle fs-5 me-1 text-gray-600"></i>
-                <span class="d-none d-md-inline fw-semibold" style="font-size:0.85rem;">{{ current_user.full_name or current_user.username }}</span>
-                {% if current_user.has_role('admin') %}<span class="badge bg-warning text-dark ms-1 d-none d-md-inline" style="font-size:0.55rem;">admin</span>{% endif %}
+    <!-- Sidebar -->
+    <ul class="navbar-nav sidebar sidebar-dark accordion bg-gradient-primary" id="accordionSidebar">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('users.dashboard') }}">
+            <div class="sidebar-brand-icon"><i class="fas fa-box"></i></div>
+            <div class="sidebar-brand-text mx-3">ProductManagementAI</div>
+        </a>
+        <hr class="sidebar-divider my-0">
+        {% if current_user.has_role('admin') %}
+        <li class="nav-item {{ 'active' if ep == 'users.dashboard' }}">
+            <a class="nav-link" href="{{ url_for('users.dashboard') }}">
+                <i class="fas fa-fw fa-tachometer-alt"></i> <span>Dashboard</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
-            </ul>
+        </li>
+        {% endif %}
+        <hr class="sidebar-divider">
+        <li class="nav-item {{ 'active' if ep.startswith('products.') }}">
+            <a class="nav-link" href="{{ url_for('products.list') }}">
+                <i class="fas fa-fw fa-boxes"></i> <span>Sản phẩm</span>
+            </a>
+        </li>
+        <li class="nav-item {{ 'active' if ep.startswith('categories.') }}">
+            <a class="nav-link" href="{{ url_for('categories.list') }}">
+                <i class="fas fa-fw fa-tags"></i> <span>Nhóm sản phẩm</span>
+            </a>
+        </li>
+        {% if current_user.has_role('admin') %}
+        <li class="nav-item {{ 'active' if ep.startswith('users.') and ep != 'users.dashboard' }}">
+            <a class="nav-link" href="{{ url_for('users.list') }}">
+                <i class="fas fa-fw fa-users"></i> <span>Người dùng</span>
+            </a>
+        </li>
+        {% endif %}
+        <hr class="sidebar-divider d-none d-md-block">
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
         </div>
-    </div>
-</nav>
-<div id="content">
+    </ul>
+    <!-- End of Sidebar -->
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle me-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ current_user.full_name or current_user.username }}</span>
+                            <i class="fas fa-user-circle text-gray-600"></i>
+                            {% if current_user.has_role('admin') %}<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">admin</span>{% endif %}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in">
+                            <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
+                                <i class="fas fa-key fa-sm fa-fw me-2 text-gray-400"></i> Đổi mật khẩu
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i> Đăng xuất
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <!-- End of Topbar -->
+            <div class="container-fluid">
+
 {% elif not current_user.is_authenticated %}
-<nav class="topbar justify-content-between">
-    <a class="text-decoration-none fw-bold" href="/" style="color:var(--gray-800);"><i class="bi bi-box"></i> ProductManagementAI</a>
-    <a class="btn btn-sm btn-primary" href="{{ url_for('auth.login') }}"><i class="bi bi-box-arrow-in-right"></i> Đăng nhập</a>
-</nav>
-<div class="container mt-4">
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <a class="navbar-brand fw-bold ms-3" href="/"><i class="fas fa-box me-2"></i>ProductManagementAI</a>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="container">
 {% endif %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show{{ ' shadow-sm' if current_user.is_authenticated else '' }}">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
 
-{% block content %}{% endblock %}
+                {% block content %}{% endblock %}
 
 {% if current_user.is_authenticated %}
-</div>{# end #content #}
-<footer class="sticky-footer"><div class="container my-auto"><span class="small text-gray-600">Copyright &copy; ProductManagementAI 2026</span></div></footer>
-</div>{# end content-wrapper #}
-</div>{# end wrapper #}
-<button class="scroll-to-top" id="scrollToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="bi bi-chevron-up"></i></button>
+            </div>
+        </div>
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span class="small text-gray-600">Copyright &copy; ProductManagementAI 2026</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đăng xuất?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">Bạn có chắc muốn đăng xuất?</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Hủy</button>
+                <a class="btn btn-primary" href="{{ url_for('auth.logout') }}">Đăng xuất</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif not current_user.is_authenticated %}
+            </div>
 {% endif %}
 
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function toggleSidebar() {
-    var s = document.getElementById('sidebar');
-    var c = document.getElementById('content-wrapper');
-    if (!s || !c) return;
-    if (window.innerWidth <= 768) { s.classList.toggle('show'); }
-    else {
-        s.classList.toggle('collapsed');
-        c.classList.toggle('expanded');
-        localStorage.setItem('sidebar_collapsed', s.classList.contains('collapsed'));
-    }
-}
-(function(){
-    var s = document.getElementById('sidebar');
-    var c = document.getElementById('content-wrapper');
-    if (s && c && localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth > 768) {
-        s.classList.add('collapsed'); c.classList.add('expanded');
-    }
-})();
-window.addEventListener('scroll', function(){
-    var btn = document.getElementById('scrollToTop');
-    if (btn) btn.classList.toggle('visible', window.scrollY > 200);
-});
-</script>
+<script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.0/js/sb-admin-2.min.js"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

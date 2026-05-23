@@ -52,9 +52,9 @@
 
 {% macro sortable_header(label, col, current_sort, current_order, endpoint, kwargs={}) %}
 {% set new_order = 'desc' if current_sort == col and current_order == 'asc' else 'asc' %}
-{% set icon = 'bi-sort-up' if current_sort == col and current_order == 'asc' else ('bi-sort-down' if current_sort == col else 'bi-arrow-down-up') %}
+{% set icon = 'fas fa-sort-up' if current_sort == col and current_order == 'asc' else ('fas fa-sort-down' if current_sort == col else 'fas fa-sort') %}
 <a href="{{ url_for(endpoint, sort=col, order=new_order, **kwargs) }}" class="text-decoration-none text-reset">
     {{ label }}
-    <i class="bi {{ icon }} small"></i>
+    <i class="{{ icon }} small"></i>
 </a>
 {% endmacro %}

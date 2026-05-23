@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
     <span class="text-gray-600 small" id="current-date">{{ now }}</span>
 </div>
 
@@ -16,7 +16,7 @@
                         <div class="stat-value text-gray-800">{{ total_products }}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="bi bi-box-seam stat-icon text-gray-300"></i>
+                        <i class="fas fa-boxes fa-2x stat-icon text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
                         <div class="stat-value text-gray-800">{{ total_categories }}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="bi bi-tags stat-icon text-gray-300"></i>
+                        <i class="fas fa-tags fa-2x stat-icon text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                         <div class="stat-value text-gray-800">{{ total_users }}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="bi bi-people stat-icon text-gray-300"></i>
+                        <i class="fas fa-users fa-2x stat-icon text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                         <div class="stat-value text-gray-800">{{ "{:,.0f}".format(total_value) }}đ</div>
                     </div>
                     <div class="col-auto">
-                        <i class="bi bi-cash-coin stat-icon text-gray-300"></i>
+                        <i class="fas fa-money-bill-wave fa-2x stat-icon text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-bar-chart"></i> Sản phẩm theo nhóm</h6>
+                <h6 class="m-0 fw-bold text-primary"><i class="fas fa-chart-bar"></i> Sản phẩm theo nhóm</h6>
             </div>
             <div class="card-body">
                 <canvas id="categoryChart" height="200"></canvas>
@@ -95,7 +95,7 @@
     <div class="col-lg-4">
         <div class="card shadow-sm {{ 'border-danger' if low_stock > 0 else '' }}">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle"></i> Tồn kho thấp</h6>
+                <h6 class="m-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle"></i> Tồn kho thấp</h6>
             </div>
             <div class="card-body text-center py-5">
                 {% if low_stock > 0 %}
@@ -115,7 +115,7 @@
     <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-success"><i class="bi bi-trophy"></i> Top 5 sản phẩm nhiều nhất</h6>
+                <h6 class="m-0 fw-bold text-success"><i class="fas fa-trophy"></i> Top 5 sản phẩm nhiều nhất</h6>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
@@ -146,7 +146,7 @@
     <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-info"><i class="bi bi-clock-history"></i> Sản phẩm mới nhất</h6>
+                <h6 class="m-0 fw-bold text-info"><i class="fas fa-clock"></i> Sản phẩm mới nhất</h6>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
@@ -178,14 +178,14 @@
 
 <div class="card shadow-sm">
     <div class="card-header bg-white py-3">
-        <h6 class="m-0 fw-bold text-gray-800"><i class="bi bi-lightning"></i> Thao tác nhanh</h6>
+        <h6 class="m-0 fw-bold text-gray-800"><i class="fas fa-bolt"></i> Thao tác nhanh</h6>
     </div>
     <div class="card-body">
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</a>
-            <a href="{{ url_for('categories.add') }}" class="btn btn-success btn-sm"><i class="bi bi-plus-lg"></i> Thêm nhóm sản phẩm</a>
+            <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
+            <a href="{{ url_for('categories.add') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm nhóm sản phẩm</a>
             {% if current_user.has_role('admin') %}
-            <a href="{{ url_for('users.add') }}" class="btn btn-warning btn-sm"><i class="bi bi-person-plus"></i> Thêm người dùng</a>
+            <a href="{{ url_for('users.add') }}" class="btn btn-warning btn-sm"><i class="fas fa-user-plus"></i> Thêm người dùng</a>
             {% endif %}
         </div>
     </div>
