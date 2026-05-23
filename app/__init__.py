@@ -1,5 +1,11 @@
+import os
 import json
 from flask import Flask
+from dotenv import load_dotenv
+
+# Load .env BEFORE config is imported
+load_dotenv()
+
 from app.config import config
 from app.extensions import db, login_manager
 

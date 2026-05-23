@@ -24,6 +24,10 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # Disable OAuth for tests
+    GOOGLE_CLIENT_ID = ''
+    GOOGLE_CLIENT_SECRET = ''
+    OAUTH_ENABLED = False
 
 
 class ProductionConfig(Config):
