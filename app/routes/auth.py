@@ -9,7 +9,7 @@ auth_bp = Blueprint('auth', __name__, template_folder='../templates')
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('products.list'))
+        return redirect(url_for('users.dashboard'))
 
     if request.method == 'POST':
         username = request.form['username'].strip()
@@ -19,7 +19,7 @@ def login():
             login_user(user)
             next_page = request.args.get('next')
             flash('Đăng nhập thành công!', 'success')
-            return redirect(next_page or url_for('products.list'))
+            return redirect(next_page or url_for('users.dashboard'))
         flash('Sai tên đăng nhập hoặc mật khẩu.', 'danger')
     return render_template('auth/login.html')
 
@@ -35,7 +35,7 @@ def logout():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('products.list'))
+        return redirect(url_for('users.dashboard'))
 
     if request.method == 'POST':
         username = request.form['username'].strip()
@@ -58,3 +58,28 @@ def register():
             return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html')
+
+
+@auth_bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        current_pw = request.form.get('current_password', '')
+        new_pw = request.form.get('new_password', '')
+        confirm = request.form.get('confirm_password', '')
+
+        if not current_user.check_password(current_pw):
+            flash('Mật khẩu hiện tại không đúng.', 'danger')
+        elif not new_pw:
+            flash('Vui lòng nhập mật khẩu mới.', 'danger')
+        elif new_pw != confirm:
+            flash('Mật khẩu xác nhận không khớp.', 'danger')
+        elif current_pw == new_pw:
+            flash('Mật khẩu mới phải khác mật khẩu hiện tại.', 'danger')
+        else:
+            current_user.set_password(new_pw)
+            db.session.commit()
+            flash('Đổi mật khẩu thành công!', 'success')
+            return redirect(url_for('users.dashboard'))
+
+    return render_template('auth/change_password.html')
