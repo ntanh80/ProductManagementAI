@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app.extensions import db
 from app.models import Category
-from app.routes.users import admin_required
+from app.routes.users import permission_required
+from app.utils import log_activity
 
 categories_bp = Blueprint('categories', __name__,
                           template_folder='../templates')
@@ -36,7 +37,7 @@ def list():
 
 @categories_bp.route('/categories/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@permission_required('categories.create')
 def add():
     if request.method == 'POST':
         name = request.form['name'].strip()
@@ -45,6 +46,8 @@ def add():
             category = Category(name=name, description=description)
             db.session.add(category)
             db.session.commit()
+            log_activity('create', 'category', category.id,
+                         {'name': name})
             flash('Thêm nhóm sản phẩm thành công!', 'success')
             return redirect(url_for('categories.list'))
         flash('Vui lòng nhập tên nhóm.', 'danger')
@@ -53,7 +56,7 @@ def add():
 
 @categories_bp.route('/categories/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@permission_required('categories.edit')
 def edit(id):
     category = db.get_or_404(Category, id)
     if request.method == 'POST':
@@ -63,6 +66,8 @@ def edit(id):
             category.name = name
             category.description = description
             db.session.commit()
+            log_activity('edit', 'category', category.id,
+                         {'name': name})
             flash('Cập nhật nhóm sản phẩm thành công!', 'success')
             return redirect(url_for('categories.list'))
         flash('Vui lòng nhập tên nhóm.', 'danger')
@@ -71,9 +76,10 @@ def edit(id):
 
 @categories_bp.route('/categories/delete/<int:id>', methods=['POST'])
 @login_required
-@admin_required
+@permission_required('categories.delete')
 def delete(id):
     category = db.get_or_404(Category, id)
+    log_activity('delete', 'category', id, {'name': category.name})
     db.session.delete(category)
     db.session.commit()
     flash('Xóa nhóm sản phẩm thành công!', 'success')

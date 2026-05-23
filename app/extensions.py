@@ -6,6 +6,9 @@ class AnonymousUser(AnonymousUserMixin):
     def has_role(self, role):
         return False
 
+    def has_permission(self, perm):
+        return False
+
 
 db = SQLAlchemy()
 login_manager = LoginManager()

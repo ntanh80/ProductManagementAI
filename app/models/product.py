@@ -1,4 +1,10 @@
+from datetime import datetime, timezone
+
 from app.extensions import db
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 
 class Product(db.Model):
@@ -10,6 +16,8 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'),
                             nullable=False)
+    created_at = db.Column(db.DateTime, default=_utcnow)
+    updated_at = db.Column(db.DateTime, default=_utcnow, onupdate=_utcnow)
 
     def __repr__(self):
         return f'<Product {self.name}>'

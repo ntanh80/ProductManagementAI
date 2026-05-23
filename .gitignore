@@ -10,3 +10,6 @@ instance/
 dist/
 build/
 seed.py
+.claude/settings.local.json
+.claude/worktrees/
+=1.3

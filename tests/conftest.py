@@ -10,7 +10,8 @@ def app():
     with app.app_context():
         _db.create_all()
         if User.query.count() == 0:
-            admin = User(username='admin', full_name='Admin', role='admin')
+            admin = User(username='admin', full_name='Admin', role='admin',
+                         email='admin@example.com')
             admin.set_password('admin')
             _db.session.add(admin)
             _db.session.commit()

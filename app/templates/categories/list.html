@@ -4,7 +4,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Nhóm sản phẩm</h1>
-    {% if current_user.has_role('admin') %}
+    {% if current_user.has_permission('categories.create') %}
     <a href="{{ url_for('categories.add') }}" class="btn btn-primary">+ Thêm nhóm</a>
     {% endif %}
 </div>
@@ -23,7 +23,7 @@
             <th>{{ sortable_header('Tên nhóm', 'name', sort, order, 'categories.list') }}</th>
             <th>{{ sortable_header('Mô tả', 'description', sort, order, 'categories.list') }}</th>
             <th>Số sản phẩm</th>
-            {% if current_user.has_role('admin') %}
+            {% if current_user.has_permission('categories.edit') or current_user.has_permission('categories.delete') %}
             <th>Thao tác</th>
             {% endif %}
         </tr>
@@ -35,19 +35,23 @@
             <td>{{ category.name }}</td>
             <td>{{ category.description or '' }}</td>
             <td>{{ category.products|length }}</td>
-            {% if current_user.has_role('admin') %}
+            {% if current_user.has_permission('categories.edit') or current_user.has_permission('categories.delete') %}
             <td>
+                {% if current_user.has_permission('categories.edit') %}
                 <a href="{{ url_for('categories.edit', id=category.id) }}" class="btn btn-sm btn-warning">Sửa</a>
+                {% endif %}
+                {% if current_user.has_permission('categories.delete') %}
                 <form action="{{ url_for('categories.delete', id=category.id) }}" method="POST" class="d-inline"
                       onsubmit="return confirm('Xóa nhóm này sẽ xóa luôn tất cả sản phẩm thuộc nhóm. Tiếp tục?')">
                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                 </form>
+                {% endif %}
             </td>
             {% endif %}
         </tr>
         {% else %}
         <tr>
-            <td colspan="{{ '5' if current_user.has_role('admin') else '4' }}" class="text-center text-muted">Chưa có nhóm sản phẩm nào.</td>
+            <td colspan="{{ '5' if current_user.has_permission('categories.edit') or current_user.has_permission('categories.delete') else '4' }}" class="text-center text-muted">Chưa có nhóm sản phẩm nào.</td>
         </tr>
         {% endfor %}
     </tbody>

@@ -32,7 +32,7 @@
             <div class="sidebar-brand-text mx-3">ProductManagementAI</div>
         </a>
         <hr class="sidebar-divider my-0">
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_permission('dashboard.view') %}
         <li class="nav-item {{ 'active' if ep == 'users.dashboard' }}">
             <a class="nav-link" href="{{ url_for('users.dashboard') }}">
                 <i class="fas fa-fw fa-tachometer-alt"></i> <span>Dashboard</span>
@@ -50,10 +50,24 @@
                 <i class="fas fa-fw fa-tags"></i> <span>Nhóm sản phẩm</span>
             </a>
         </li>
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_permission('inventory.view') %}
+        <li class="nav-item {{ 'active' if ep.startswith('inventory.') }}">
+            <a class="nav-link" href="{{ url_for('inventory.list') }}">
+                <i class="fas fa-fw fa-warehouse"></i> <span>Kho hàng</span>
+            </a>
+        </li>
+        {% endif %}
+        {% if current_user.has_permission('users.view') %}
         <li class="nav-item {{ 'active' if ep.startswith('users.') and ep != 'users.dashboard' }}">
             <a class="nav-link" href="{{ url_for('users.list') }}">
                 <i class="fas fa-fw fa-users"></i> <span>Người dùng</span>
+            </a>
+        </li>
+        {% endif %}
+        {% if current_user.has_permission('audit.view') %}
+        <li class="nav-item {{ 'active' if ep.startswith('audit.') }}">
+            <a class="nav-link" href="{{ url_for('audit.list') }}">
+                <i class="fas fa-fw fa-history"></i> <span>Nhật ký</span>
             </a>
         </li>
         {% endif %}
@@ -72,13 +86,26 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <ul class="navbar-nav ms-auto">
+                    <!-- Low Stock Notification -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link" href="{{ url_for('products.list', sort='quantity', order='asc') }}">
+                            <i class="fas fa-bell fa-fw"></i>
+                            {% if low_stock_count > 0 %}
+                            <span class="badge bg-danger badge-counter">{{ low_stock_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <div class="topbar-divider d-none d-sm-block"></div>
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                             <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ current_user.full_name or current_user.username }}</span>
                             <i class="fas fa-user-circle text-gray-600"></i>
-                            {% if current_user.has_role('admin') %}<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">admin</span>{% endif %}
+                            {% if current_user.has_permission('users.view') %}<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">admin</span>{% endif %}
                         </a>
                         <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in">
+                            <a class="dropdown-item" href="{{ url_for('auth.profile') }}">
+                                <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i> Hồ sơ
+                            </a>
                             <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
                                 <i class="fas fa-key fa-sm fa-fw me-2 text-gray-400"></i> Đổi mật khẩu
                             </a>

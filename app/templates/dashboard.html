@@ -66,7 +66,7 @@
             <div class="card-body">
                 <div class="row g-0 align-items-center">
                     <div class="col me-2">
-                        <div class="stat-label text-info">Tổng giá trị kho</div>
+                        <div class="stat-label text-info">Giá trị kho</div>
                         <div class="stat-value text-gray-800">{{ "{:,.0f}".format(total_value) }}đ</div>
                     </div>
                     <div class="col-auto">
@@ -75,7 +75,7 @@
                 </div>
             </div>
             <div class="card-footer bg-white border-0 pt-0">
-                <span class="small text-info">Giá trị tồn kho</span>
+                <span class="small text-info">Tồn kho</span>
             </div>
         </div>
     </div>
@@ -112,10 +112,10 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-6">
+    <div class="col-lg-6">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-success"><i class="fas fa-trophy"></i> Top 5 sản phẩm nhiều nhất</h6>
+                <h6 class="m-0 fw-bold text-success"><i class="fas fa-trophy"></i> Top 5 giá trị nhất</h6>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
@@ -124,16 +124,16 @@
                             <th>#</th>
                             <th>Tên sản phẩm</th>
                             <th>Nhóm</th>
-                            <th class="text-end">Số lượng</th>
+                            <th class="text-end">Giá trị</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for p in top_products %}
+                        {% for p in top_by_value %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td>{{ p.name }}</td>
+                            <td class="small">{{ p.name }}</td>
                             <td><span class="badge bg-secondary">{{ p.category.name }}</span></td>
-                            <td class="text-end fw-bold">{{ p.quantity }}</td>
+                            <td class="text-end fw-bold">{{ "{:,.0f}".format(p.price * p.quantity) }}đ</td>
                         </tr>
                         {% else %}
                         <tr><td colspan="4" class="text-center text-muted">Chưa có sản phẩm</td></tr>
@@ -143,34 +143,66 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-lg-6">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h6 class="m-0 fw-bold text-info"><i class="fas fa-clock"></i> Sản phẩm mới nhất</h6>
+                <h6 class="m-0 fw-bold text-info"><i class="fas fa-chart-pie"></i> Giá trị kho theo nhóm</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="valueChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-secondary"><i class="fas fa-clock"></i> Giao dịch kho gần đây</h6>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>#</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Giá</th>
-                            <th class="text-end">Số lượng</th>
+                            <th>SP</th>
+                            <th>Loại</th>
+                            <th class="text-end">SL</th>
+                            <th class="text-end">Thời gian</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for p in recent_products %}
+                        {% for txn in recent_stock %}
                         <tr>
-                            <td>{{ p.id }}</td>
-                            <td>{{ p.name }}</td>
-                            <td>{{ "{:,.0f}".format(p.price) }}đ</td>
-                            <td class="text-end">{{ p.quantity }}</td>
+                            <td class="small">{{ txn.product.name if txn.product else 'N/A' }}</td>
+                            <td>
+                                {% if txn.type == 'import' %}
+                                <span class="badge bg-success">Nhập</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Xuất</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold">{{ txn.quantity }}</td>
+                            <td class="text-end small text-muted">{{ txn.created_at.strftime('%d/%m %H:%M') if txn.created_at else '' }}</td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="4" class="text-center text-muted">Chưa có sản phẩm</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted">Chưa có giao dịch</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="card-footer bg-white border-0 text-end">
+                <a href="{{ url_for('inventory.list') }}" class="small">Xem tất cả &rarr;</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary"><i class="fas fa-user-plus"></i> Người dùng mới (7 ngày)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="regChart" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -184,7 +216,10 @@
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
             <a href="{{ url_for('categories.add') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Thêm nhóm sản phẩm</a>
-            {% if current_user.has_role('admin') %}
+            {% if current_user.has_permission('inventory.import') %}
+            <a href="{{ url_for('inventory.import_stock') }}" class="btn btn-info btn-sm"><i class="fas fa-warehouse"></i> Nhập kho</a>
+            {% endif %}
+            {% if current_user.has_permission('users.create') %}
             <a href="{{ url_for('users.add') }}" class="btn btn-warning btn-sm"><i class="fas fa-user-plus"></i> Thêm người dùng</a>
             {% endif %}
         </div>
@@ -196,15 +231,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('categoryChart').getContext('2d');
-    new Chart(ctx, {
+    const colors = ['#4e73df','#1cc88a','#36b9cc','#f6c23e','#e74a3b','#6610f2','#fd7e14','#20c997','#d63384','#6f42c1'];
+
+    new Chart(document.getElementById('categoryChart'), {
         type: 'bar',
         data: {
             labels: {{ chart_labels|tojson }},
             datasets: [{
                 label: 'Số sản phẩm',
                 data: {{ chart_counts|tojson }},
-                backgroundColor: ['#4e73df','#1cc88a','#36b9cc','#f6c23e','#e74a3b','#6610f2','#fd7e14','#20c997','#d63384','#6f42c1'],
+                backgroundColor: colors.slice(0, {{ chart_labels|length }}),
                 borderRadius: 4,
             }]
         },
@@ -216,6 +252,47 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    new Chart(document.getElementById('valueChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                data: {{ category_values|tojson }},
+                backgroundColor: colors.slice(0, {{ chart_labels|length }}),
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+
+    {% if reg_labels %}
+    new Chart(document.getElementById('regChart'), {
+        type: 'line',
+        data: {
+            labels: {{ reg_labels|tojson }},
+            datasets: [{
+                label: 'Người dùng mới',
+                data: {{ reg_counts|tojson }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78,115,223,0.1)',
+                fill: true,
+                tension: 0.3,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+    {% endif %}
 });
 </script>
 {% endblock %}

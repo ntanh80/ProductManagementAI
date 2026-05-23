@@ -1,3 +1,4 @@
+import json
 from flask import Flask
 from app.config import config
 from app.extensions import db, login_manager
@@ -20,23 +21,84 @@ def create_app(config_name=None):
     from app.routes.products import products_bp
     from app.routes.auth import auth_bp
     from app.routes.users import users_bp
+    from app.routes.audit_log import audit_bp
+    from app.routes.inventory import inventory_bp
+    from app.oauth import init_oauth
 
     app.register_blueprint(categories_bp, url_prefix='/admin')
     app.register_blueprint(products_bp, url_prefix='/admin')
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp, url_prefix='/admin')
+    app.register_blueprint(audit_bp, url_prefix='/admin')
+    app.register_blueprint(inventory_bp, url_prefix='/admin')
+
+    init_oauth(app)
 
     @app.route('/')
     def index():
         from flask import redirect, url_for
         return redirect(url_for('users.dashboard'))
 
+    @app.context_processor
+    def inject_globals():
+        from app.models import Product
+        from flask_login import current_user
+        low_stock_count = 0
+        if current_user.is_authenticated:
+            try:
+                low_stock_count = Product.query.filter(
+                    Product.quantity < 10).count()
+            except Exception:
+                pass
+        return dict(low_stock_count=low_stock_count)
+
     with app.app_context():
-        from app.models import User, Category, Product  # noqa: F401
+        from app.models import User, Category, Product, AuditLog, StockTransaction  # noqa: F401
         db.create_all()
+
+        # Migrate existing tables
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+
+        # Add permissions column to users if missing
+        user_cols = [c['name'] for c in inspector.get_columns('users')]
+        if 'permissions' not in user_cols:
+            db.session.execute(text(
+                'ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT ""'))
+            from app.permissions import get_default_permissions
+            for user in User.query.all():
+                if not user.permissions:
+                    user.permissions = json.dumps(
+                        list(get_default_permissions(user.role)),
+                        ensure_ascii=False)
+            db.session.commit()
+
+        # Add google_id to users if missing
+        if 'google_id' not in user_cols:
+            db.session.execute(text(
+                'ALTER TABLE users ADD COLUMN google_id VARCHAR(100)'))
+            db.session.commit()
+
+        # Add created_at/updated_at to products if missing
+        prod_cols = [c['name'] for c in inspector.get_columns('products')]
+        if 'created_at' not in prod_cols:
+            from datetime import datetime, timezone
+            db.session.execute(text(
+                'ALTER TABLE products ADD COLUMN created_at TIMESTAMP'))
+            db.session.execute(text(
+                'ALTER TABLE products ADD COLUMN updated_at TIMESTAMP'))
+            Product.query.update(
+                {Product.created_at: datetime.now(timezone.utc)})
+            db.session.commit()
+
+        # Seed default admin if no users
         if User.query.count() == 0:
+            from app.permissions import get_default_permissions
             admin = User(username='admin', full_name='Administrator',
-                         role='admin')
+                         role='admin',
+                         permissions=json.dumps(
+                             list(get_default_permissions('admin')),
+                             ensure_ascii=False))
             admin.set_password('admin')
             db.session.add(admin)
             db.session.commit()

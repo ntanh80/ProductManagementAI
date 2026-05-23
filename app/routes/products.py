@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app.extensions import db
 from app.models import Category, Product
-from app.routes.users import admin_required
+from app.routes.users import permission_required
+from app.utils import log_activity, export_workbook
+from datetime import datetime
 
 products_bp = Blueprint('products', __name__,
                         template_folder='../templates')
@@ -13,6 +15,7 @@ SORT_OPTIONS = {
     'price': Product.price,
     'quantity': Product.quantity,
     'category': Category.name,
+    'created_at': Product.created_at,
 }
 
 
@@ -25,6 +28,11 @@ def list():
     per_page = request.args.get('per_page', 10, type=int)
     search = request.args.get('search', '').strip()
     category_id = request.args.get('category_id', 0, type=int)
+    min_price = request.args.get('min_price', 0, type=float)
+    max_price = request.args.get('max_price', 0, type=float)
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    stock_status = request.args.get('stock_status', '').strip()
 
     query = Product.query
 
@@ -32,6 +40,29 @@ def list():
         query = query.filter(Product.name.ilike(f'%{search}%'))
     if category_id:
         query = query.filter(Product.category_id == category_id)
+    if min_price > 0:
+        query = query.filter(Product.price >= min_price)
+    if max_price > 0:
+        query = query.filter(Product.price <= max_price)
+    if date_from:
+        try:
+            dt = datetime.strptime(date_from, '%Y-%m-%d')
+            query = query.filter(Product.created_at >= dt)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            dt = datetime.strptime(date_to, '%Y-%m-%d')
+            query = query.filter(Product.created_at <= dt)
+        except ValueError:
+            pass
+    if stock_status == 'in_stock':
+        query = query.filter(Product.quantity > 10)
+    elif stock_status == 'low_stock':
+        query = query.filter(Product.quantity >= 1,
+                             Product.quantity <= 10)
+    elif stock_status == 'out_of_stock':
+        query = query.filter(Product.quantity == 0)
     if sort == 'category':
         query = query.join(Product.category)
 
@@ -48,12 +79,15 @@ def list():
     return render_template('products/list.html', pagination=pagination,
                            sort=sort, order=order, per_page=per_page,
                            search=search, category_id=category_id,
-                           categories=categories)
+                           categories=categories,
+                           min_price=min_price, max_price=max_price,
+                           date_from=date_from, date_to=date_to,
+                           stock_status=stock_status)
 
 
 @products_bp.route('/products/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@permission_required('products.create')
 def add():
     categories = Category.query.order_by(Category.name).all()
     if request.method == 'POST':
@@ -70,6 +104,8 @@ def add():
             )
             db.session.add(product)
             db.session.commit()
+            log_activity('create', 'product', product.id,
+                         {'name': name, 'price': price, 'quantity': quantity})
             flash('Thêm sản phẩm thành công!', 'success')
             return redirect(url_for('products.list'))
     return render_template('products/form.html', product=None,
@@ -78,7 +114,7 @@ def add():
 
 @products_bp.route('/products/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@permission_required('products.edit')
 def edit(id):
     product = db.get_or_404(Product, id)
     categories = Category.query.order_by(Category.name).all()
@@ -95,6 +131,8 @@ def edit(id):
             product.quantity = int(quantity)
             product.category_id = int(cat_id)
             db.session.commit()
+            log_activity('edit', 'product', product.id,
+                         {'name': name, 'price': price, 'quantity': quantity})
             flash('Cập nhật sản phẩm thành công!', 'success')
             return redirect(url_for('products.list'))
     return render_template('products/form.html', product=product,
@@ -103,10 +141,27 @@ def edit(id):
 
 @products_bp.route('/products/delete/<int:id>', methods=['POST'])
 @login_required
-@admin_required
+@permission_required('products.delete')
 def delete(id):
     product = db.get_or_404(Product, id)
+    log_activity('delete', 'product', id, {'name': product.name})
     db.session.delete(product)
     db.session.commit()
     flash('Xóa sản phẩm thành công!', 'success')
     return redirect(url_for('products.list'))
+
+
+@products_bp.route('/products/export')
+@login_required
+def export_xlsx():
+    query = Product.query.join(Product.category).order_by(Product.name)
+    products = query.all()
+    headers = ['ID', 'Tên sản phẩm', 'Giá', 'Số lượng', 'Nhóm sản phẩm',
+               'Ngày tạo']
+    rows = []
+    for p in products:
+        rows.append([
+            p.id, p.name, p.price, p.quantity, p.category.name,
+            p.created_at.strftime('%d/%m/%Y') if p.created_at else '',
+        ])
+    return export_workbook(headers, rows, 'danh-sach-san-pham')

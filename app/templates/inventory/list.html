@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-warehouse"></i> Lịch sử kho</h1>
+    <div class="d-flex gap-2">
+        {% if current_user.has_permission('inventory.import') %}
+        <a href="{{ url_for('inventory.import_stock') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus"></i> Nhập kho
+        </a>
+        {% endif %}
+        {% if current_user.has_permission('inventory.export') %}
+        <a href="{{ url_for('inventory.export_stock') }}" class="btn btn-warning btn-sm">
+            <i class="fas fa-minus"></i> Xuất kho
+        </a>
+        {% endif %}
+        {% if current_user.has_permission('inventory.view') %}
+        <a href="{{ url_for('inventory.export_xlsx', type=type_filter, product_id=product_filter) }}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-file-excel"></i> Xuất Excel
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% set filter_kwargs = {} %}
+{% if type_filter %}{% set _ = filter_kwargs.update({'type': type_filter}) %}{% endif %}
+{% if product_filter %}{% set _ = filter_kwargs.update({'product_id': product_filter}) %}{% endif %}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Loại giao dịch</label>
+                <select class="form-select form-select-sm" name="type">
+                    <option value="">Tất cả</option>
+                    <option value="import" {{ 'selected' if type_filter == 'import' }}>Nhập kho</option>
+                    <option value="export" {{ 'selected' if type_filter == 'export' }}>Xuất kho</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Sản phẩm</label>
+                <select class="form-select form-select-sm" name="product_id">
+                    <option value="0">Tất cả</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" {{ 'selected' if product_filter == p.id }}>{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill"><i class="fas fa-filter"></i> Lọc</button>
+                <a href="{{ url_for('inventory.list') }}" class="btn btn-secondary btn-sm flex-fill"><i class="fas fa-undo"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-2 text-muted small">
+    Tổng số: <strong>{{ pagination.total }}</strong> giao dịch
+    {% if pagination.pages > 1 %}
+        &middot; Trang {{ pagination.page }} / {{ pagination.pages }}
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th>Sản phẩm</th>
+                    <th>Loại</th>
+                    <th style="width:100px;">Số lượng</th>
+                    <th>Tham chiếu</th>
+                    <th>Ghi chú</th>
+                    <th>Người tạo</th>
+                    <th style="width:150px;">Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in pagination.items %}
+                <tr>
+                    <td class="text-muted small">{{ txn.id }}</td>
+                    <td>
+                        <a href="{{ url_for('inventory.product_history', product_id=txn.product_id) }}" class="small">
+                            {{ txn.product.name if txn.product else 'N/A' }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if txn.type == 'import' %}
+                        <span class="badge bg-success">Nhập</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Xuất</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold {{ 'text-success' if txn.type == 'import' else 'text-danger' }}">
+                        {{ '+' if txn.type == 'import' else '-' }}{{ txn.quantity }}
+                    </td>
+                    <td class="small text-muted">{{ txn.reference or '' }}</td>
+                    <td class="small text-muted">{{ txn.notes or '' }}</td>
+                    <td class="small">{{ txn.creator.username if txn.creator else '' }}</td>
+                    <td class="small text-muted">{{ txn.created_at.strftime('%d/%m/%Y %H:%M') if txn.created_at else '' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-warehouse fa-2x mb-2 d-block"></i>
+                        Chưa có giao dịch nào.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-white py-3">
+        {{ render_pagination(pagination, 'inventory.list', per_page=per_page, filter_kwargs=filter_kwargs) }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

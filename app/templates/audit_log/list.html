@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-history"></i> Nhật ký hoạt động</h1>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Hành động</label>
+                <select class="form-select form-select-sm" name="action">
+                    <option value="">Tất cả</option>
+                    {% for a in actions %}
+                    <option value="{{ a }}" {{ 'selected' if action_filter == a }}>{{ a|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Đối tượng</label>
+                <select class="form-select form-select-sm" name="entity_type">
+                    <option value="">Tất cả</option>
+                    {% for e in entity_types %}
+                    <option value="{{ e }}" {{ 'selected' if entity_filter == e }}>{{ e|replace('_', ' ')|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill"><i class="fas fa-filter"></i> Lọc</button>
+                <a href="{{ url_for('audit.list') }}" class="btn btn-secondary btn-sm flex-fill"><i class="fas fa-undo"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-2 text-muted small">
+    Tổng số: <strong>{{ pagination.total }}</strong> bản ghi
+    {% if pagination.pages > 1 %}
+        &middot; Trang {{ pagination.page }} / {{ pagination.pages }}
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th>Người dùng</th>
+                    <th>Hành động</th>
+                    <th>Đối tượng</th>
+                    <th>Chi tiết</th>
+                    <th style="width:160px;">Thời gian</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in pagination.items %}
+                <tr>
+                    <td class="text-muted small">{{ log.id }}</td>
+                    <td><span class="small">{{ log.username }}</span></td>
+                    <td>
+                        {% if log.action == 'create' %}
+                        <span class="badge bg-success">Tạo</span>
+                        {% elif log.action == 'edit' %}
+                        <span class="badge bg-primary">Sửa</span>
+                        {% elif log.action == 'delete' %}
+                        <span class="badge bg-danger">Xóa</span>
+                        {% elif log.action in ('import', 'export') %}
+                        <span class="badge bg-info">{{ log.action|capitalize }}</span>
+                        {% elif log.action == 'login' %}
+                        <span class="badge bg-secondary">Đăng nhập</span>
+                        {% else %}
+                        <span class="badge bg-dark">{{ log.action }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="small">{{ log.entity_type|replace('_', ' ') }}</span></td>
+                    <td class="small text-muted">
+                        {% if log.entity_id %}
+                        <span>#{{ log.entity_id }}</span>
+                        {% endif %}
+                        {% if log.details %}
+                        <span class="text-info cursor-pointer" data-bs-toggle="tooltip" title="{{ log.details }}">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ log.timestamp.strftime('%d/%m/%Y %H:%M') if log.timestamp else '' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-2x mb-2 d-block"></i>
+                        Chưa có hoạt động nào.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-white py-3">
+        {{ render_pagination(pagination, 'audit.list', per_page=per_page,
+               filter_kwargs={'action': action_filter, 'entity_type': entity_filter}) }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -7,6 +7,11 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+    OAUTH_ENABLED = bool(os.environ.get('GOOGLE_CLIENT_ID', ''))
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
