@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
+from sqlalchemy import or_
 from app.extensions import db
 from app.models import Category
 from app.routes.users import permission_required
@@ -22,17 +23,27 @@ def list():
     sort = request.args.get('sort', 'name')
     order = request.args.get('order', 'asc')
     per_page = request.args.get('per_page', 10, type=int)
+    q = request.args.get('q', '').strip()
 
     sort_col = SORT_OPTIONS.get(sort, Category.name)
     if order == 'desc':
         sort_col = sort_col.desc()
 
-    pagination = Category.query.order_by(sort_col).paginate(
+    query = Category.query
+    if q:
+        query = query.filter(
+            or_(
+                Category.name.ilike(f'%{q}%'),
+                Category.description.ilike(f'%{q}%'),
+            )
+        )
+
+    pagination = query.order_by(sort_col).paginate(
         page=page, per_page=per_page, error_out=False
     )
 
     return render_template('categories/list.html', pagination=pagination,
-                           sort=sort, order=order, per_page=per_page)
+                           sort=sort, order=order, per_page=per_page, q=q)
 
 
 @categories_bp.route('/categories/add', methods=['GET', 'POST'])

@@ -9,6 +9,26 @@
     {% endif %}
 </div>
 
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="q" value="{{ q or '' }}"
+                   placeholder="Tìm kiếm tên, mô tả..." autofocus>
+            <button class="btn btn-outline-secondary" type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+            {% if q %}
+            <a href="{{ url_for('categories.list') }}" class="btn btn-outline-danger">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="order" value="{{ order }}">
+    <input type="hidden" name="per_page" value="{{ per_page }}">
+</form>
+
 <div class="mb-2 text-muted small">
     Tổng số: <strong>{{ pagination.total }}</strong> nhóm
     {% if pagination.pages > 1 %}
