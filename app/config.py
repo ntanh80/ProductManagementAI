@@ -19,6 +19,8 @@ class DevelopmentConfig(Config):
         'DATABASE_URL',
         'sqlite:///product_management.db',
     )
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(basedir), 'static/uploads')
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB
 
 
 class TestingConfig(Config):

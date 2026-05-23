@@ -1,10 +1,20 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import os
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required
 from app.extensions import db
 from app.models import Category, Product
 from app.routes.users import permission_required
 from app.utils import log_activity, export_workbook
 from datetime import datetime
+from werkzeug.utils import secure_filename
+
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 products_bp = Blueprint('products', __name__,
                         template_folder='../templates')
@@ -102,8 +112,30 @@ def add():
                 name=name, price=float(price), quantity=int(quantity),
                 category_id=int(cat_id),
             )
+            # Handle image upload
+            file = request.files.get('image')
+            if file and file.filename and allowed_file(file.filename):
+                ext = secure_filename(file.filename).rsplit('.', 1)[1].lower()
+                filename = f'product_{product.id}_{product.name[:30].strip()}.{ext}'
+                upload_dir = os.path.join(
+                    current_app.root_path, '..', 'static', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                file.save(os.path.join(upload_dir, filename))
+                product.image = filename
+
             db.session.add(product)
             db.session.commit()
+
+            # If image was saved before commit, re-save with correct ID
+            if file and file.filename and allowed_file(file.filename):
+                old_path = os.path.join(upload_dir, filename)
+                new_filename = f'product_{product.id}.{ext}'
+                new_path = os.path.join(upload_dir, new_filename)
+                if os.path.exists(old_path):
+                    os.rename(old_path, new_path)
+                product.image = new_filename
+                db.session.commit()
+
             log_activity('create', 'product', product.id,
                          {'name': name, 'price': price, 'quantity': quantity})
             flash('Thêm sản phẩm thành công!', 'success')
@@ -130,6 +162,31 @@ def edit(id):
             product.price = float(price)
             product.quantity = int(quantity)
             product.category_id = int(cat_id)
+
+            # Handle image upload
+            file = request.files.get('image')
+            if file and file.filename and allowed_file(file.filename):
+                ext = secure_filename(file.filename).rsplit('.', 1)[1].lower()
+                filename = f'product_{product.id}.{ext}'
+                upload_dir = os.path.join(
+                    current_app.root_path, '..', 'static', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                # Delete old image
+                if product.image:
+                    old_path = os.path.join(upload_dir, product.image)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                file.save(os.path.join(upload_dir, filename))
+                product.image = filename
+            elif request.form.get('remove_image'):
+                upload_dir = os.path.join(
+                    current_app.root_path, '..', 'static', 'uploads')
+                if product.image:
+                    old_path = os.path.join(upload_dir, product.image)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                product.image = None
+
             db.session.commit()
             log_activity('edit', 'product', product.id,
                          {'name': name, 'price': price, 'quantity': quantity})
@@ -144,6 +201,13 @@ def edit(id):
 @permission_required('products.delete')
 def delete(id):
     product = db.get_or_404(Product, id)
+    # Delete image file if exists
+    if product.image:
+        upload_dir = os.path.join(
+            current_app.root_path, '..', 'static', 'uploads')
+        img_path = os.path.join(upload_dir, product.image)
+        if os.path.exists(img_path):
+            os.remove(img_path)
     log_activity('delete', 'product', id, {'name': product.name})
     db.session.delete(product)
     db.session.commit()

@@ -1,36 +1,83 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{ 'Sửa sản phẩm' if product else 'Thêm sản phẩm' }}</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-{{ 'edit' if product else 'plus-circle' }} me-2"></i>
+        {{ _('Sửa sản phẩm') if product else _('Thêm sản phẩm') }}
+    </h1>
+</div>
 
-<form method="POST">
-    <div class="mb-3">
-        <label for="name" class="form-label">Tên sản phẩm</label>
-        <input type="text" class="form-control" id="name" name="name"
-               value="{{ product.name if product else '' }}" required>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">{{ _('Tên sản phẩm') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name"
+                               value="{{ product.name if product else '' }}" required autofocus>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">{{ _('Nhóm') }} <span class="text-danger">*</span></label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">-- {{ _('Chọn nhóm') }} --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {{ 'selected' if product and product.category_id == cat.id else '' }}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="price" class="form-label">{{ _('Giá') }} <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0"
+                                   value="{{ product.price if product else '0' }}" required>
+                            <span class="input-group-text">đ</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">{{ _('Số lượng') }} <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="0"
+                               value="{{ product.quantity if product else '0' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">{{ _('Hình ảnh') }}</label>
+                        <input type="file" class="form-control" id="image" name="image"
+                               accept="image/png,image/jpeg,image/gif,image/webp">
+                        {% if product and product.image %}
+                        <div class="mt-2 d-flex align-items-center gap-2">
+                            <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                                 alt="{{ product.name }}" style="max-height:48px;border-radius:4px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remove_image" name="remove_image" value="1">
+                                <label class="form-check-label small text-danger" for="remove_image">{{ _('Xóa ảnh') }}</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="form-text small text-muted">PNG, JPG, GIF, WebP. Tối đa 5MB.</div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4">
+                    <i class="fas fa-save me-1"></i> {{ _('Cập nhật') if product else _('Thêm') }}
+                </button>
+                <a href="{{ url_for('products.list') }}" class="btn btn-outline-secondary px-4">
+                    <i class="fas fa-times me-1"></i> {{ _('Hủy') }}
+                </a>
+            </div>
+        </form>
     </div>
-    <div class="mb-3">
-        <label for="price" class="form-label">Giá</label>
-        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0"
-               value="{{ product.price if product else '0' }}" required>
-    </div>
-    <div class="mb-3">
-        <label for="quantity" class="form-label">Số lượng</label>
-        <input type="number" class="form-control" id="quantity" name="quantity" min="0"
-               value="{{ product.quantity if product else '0' }}" required>
-    </div>
-    <div class="mb-3">
-        <label for="category_id" class="form-label">Nhóm sản phẩm</label>
-        <select class="form-select" id="category_id" name="category_id" required>
-            <option value="">-- Chọn nhóm --</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {{ 'selected' if product and product.category_id == cat.id else '' }}>
-                {{ cat.name }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
-    <button type="submit" class="btn btn-success">{{ 'Cập nhật' if product else 'Thêm' }}</button>
-    <a href="{{ url_for('products.list') }}" class="btn btn-secondary">Hủy</a>
-</form>
+</div>
 {% endblock %}

@@ -3,100 +3,150 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-boxes"></i> Sản phẩm</h1>
+    <div>
+        <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-boxes me-2"></i>Sản phẩm</h1>
+    </div>
     <div class="d-flex gap-2">
         <a href="{{ url_for('products.export_xlsx') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-file-excel"></i> Xuất Excel
         </a>
         {% if current_user.has_permission('products.create') %}
-        <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-sm">+ Thêm sản phẩm</a>
+        <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Thêm sản phẩm
+        </a>
         {% endif %}
     </div>
 </div>
 
 {% set filter_kwargs = {'search': search, 'category_id': category_id, 'min_price': min_price, 'max_price': max_price, 'date_from': date_from, 'date_to': date_to, 'stock_status': stock_status} %}
+{% set has_filter = search or category_id or min_price > 0 or max_price > 0 or date_from or date_to or stock_status %}
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body py-3">
-        <form method="GET" class="row g-2">
-            <div class="col-md-3">
-                <label class="form-label small mb-1">Tìm kiếm</label>
-                <input type="text" class="form-control form-control-sm" name="search"
-                       placeholder="Tên sản phẩm..." value="{{ search }}">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Nhóm</label>
-                <select class="form-select form-select-sm" name="category_id">
-                    <option value="0">Tất cả</option>
-                    {% for cat in categories %}
-                    <option value="{{ cat.id }}" {{ 'selected' if category_id == cat.id }}>{{ cat.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Giá từ</label>
-                <input type="number" class="form-control form-control-sm" name="min_price"
-                       value="{{ min_price if min_price > 0 else '' }}" placeholder="0" min="0">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Giá đến</label>
-                <input type="number" class="form-control form-control-sm" name="max_price"
-                       value="{{ max_price if max_price > 0 else '' }}" placeholder="0" min="0">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Tồn kho</label>
-                <select class="form-select form-select-sm" name="stock_status">
-                    <option value="">Tất cả</option>
-                    <option value="in_stock" {{ 'selected' if stock_status == 'in_stock' }}>Còn hàng (&gt;10)</option>
-                    <option value="low_stock" {{ 'selected' if stock_status == 'low_stock' }}>Sắp hết (1-10)</option>
-                    <option value="out_of_stock" {{ 'selected' if stock_status == 'out_of_stock' }}>Hết hàng</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Từ ngày</label>
-                <input type="date" class="form-control form-control-sm" name="date_from" value="{{ date_from }}">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small mb-1">Đến ngày</label>
-                <input type="date" class="form-control form-control-sm" name="date_to" value="{{ date_to }}">
-            </div>
-            <div class="col-md-2 d-flex gap-2 align-items-end">
-                <button type="submit" class="btn btn-primary btn-sm flex-fill">
-                    <i class="fas fa-search"></i> Tìm
-                </button>
-                <a href="{{ url_for('products.list') }}" class="btn btn-secondary btn-sm flex-fill">
-                    <i class="fas fa-undo"></i> Reset
-                </a>
-            </div>
-            {% for key in ['sort', 'order', 'per_page'] %}
-                {% if request.args.get(key) %}
-                    <input type="hidden" name="{{ key }}" value="{{ request.args.get(key) }}">
-                {% endif %}
-            {% endfor %}
-        </form>
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+            <form method="GET" class="d-flex gap-2 flex-grow-1" id="quickSearchForm">
+                <div class="input-group input-group-sm" style="max-width: 320px;">
+                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control" name="search" value="{{ search }}"
+                           placeholder="Tìm kiếm sản phẩm..." autofocus>
+                    {% if search %}
+                    <a href="{{ url_for('products.list', page=1, sort=sort, order=order, per_page=per_page) }}"
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm d-none">Tìm</button>
+            </form>
+        </div>
+        <button class="btn btn-sm {{ 'btn-info' if has_filter else 'btn-outline-secondary' }}"
+                type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilter"
+                aria-expanded="{{ 'true' if has_filter else 'false' }}">
+            <i class="fas fa-sliders-h me-1"></i> Bộ lọc
+            {% if has_filter %}
+            <span class="badge bg-warning text-dark ms-1">!</span>
+            {% endif %}
+        </button>
+    </div>
+    <div class="collapse {{ 'show' if has_filter else '' }}" id="advancedFilter">
+        <div class="card-body border-top py-3">
+            <form method="GET" class="row g-2">
+                <input type="hidden" name="search" value="{{ search }}">
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Nhóm</label>
+                    <select class="form-select form-select-sm" name="category_id">
+                        <option value="0">Tất cả</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {{ 'selected' if category_id == cat.id }}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Giá từ</label>
+                    <input type="number" class="form-control form-control-sm" name="min_price"
+                           value="{{ min_price if min_price > 0 else '' }}" placeholder="0" min="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Giá đến</label>
+                    <input type="number" class="form-control form-control-sm" name="max_price"
+                           value="{{ max_price if max_price > 0 else '' }}" placeholder="0" min="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Tồn kho</label>
+                    <select class="form-select form-select-sm" name="stock_status">
+                        <option value="">Tất cả</option>
+                        <option value="in_stock" {{ 'selected' if stock_status == 'in_stock' }}>Còn hàng</option>
+                        <option value="low_stock" {{ 'selected' if stock_status == 'low_stock' }}>Sắp hết</option>
+                        <option value="out_of_stock" {{ 'selected' if stock_status == 'out_of_stock' }}>Hết hàng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Từ ngày</label>
+                    <input type="date" class="form-control form-control-sm" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1 fw-medium text-muted">Đến ngày</label>
+                    <input type="date" class="form-control form-control-sm" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-12 d-flex gap-2 justify-content-end mt-2">
+                    <button type="submit" class="btn btn-primary btn-sm px-3">
+                        <i class="fas fa-search me-1"></i> Lọc
+                    </button>
+                    <a href="{{ url_for('products.list') }}" class="btn btn-outline-secondary btn-sm px-3">
+                        <i class="fas fa-undo me-1"></i> Xóa lọc
+                    </a>
+                </div>
+                {% for key in ['sort', 'order'] %}
+                    {% if request.args.get(key) %}
+                        <input type="hidden" name="{{ key }}" value="{{ request.args.get(key) }}">
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
     </div>
 </div>
 
-<div class="mb-2 text-muted small">
-    Tổng số: <strong>{{ pagination.total }}</strong> sản phẩm
-    {% if pagination.pages > 1 %}
-        &middot; Trang {{ pagination.page }} / {{ pagination.pages }}
-    {% endif %}
+<!-- Summary bar -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="text-muted small">
+        <i class="fas fa-database me-1"></i> Tổng số:
+        <strong>{{ pagination.total }}</strong> sản phẩm
+        {% if pagination.pages > 1 %}
+        &middot; Trang {{ pagination.page }}/{{ pagination.pages }}
+        {% endif %}
+        {% if has_filter %}
+        &middot; <a href="{{ url_for('products.list') }}" class="text-danger text-decoration-none">
+            <i class="fas fa-times me-1"></i>Xóa bộ lọc
+        </a>
+        {% endif %}
+    </div>
+    <div>
+        <select class="form-select form-select-sm text-muted" style="width: auto;"
+                onchange="window.location.href=this.value;">
+            {% for pp in [10, 20, 50, 100] %}
+            <option value="{{ url_for('products.list', page=1, sort=sort, order=order, per_page=pp, **filter_kwargs) }}"
+                    {{ 'selected' if per_page == pp }}>
+                Hiển thị {{ pp }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
 </div>
 
 <div class="card shadow-sm">
-    <div class="table-responsive">
+    <div class="table-responsive mb-0">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th style="width:50px;">{{ sortable_header('#', 'id', sort, order, 'products.list', filter_kwargs) }}</th>
-                    <th>{{ sortable_header('Tên sản phẩm', 'name', sort, order, 'products.list', filter_kwargs) }}</th>
-                    <th style="width:110px;">{{ sortable_header('Giá', 'price', sort, order, 'products.list', filter_kwargs) }}</th>
-                    <th style="width:90px;">{{ sortable_header('Số lượng', 'quantity', sort, order, 'products.list', filter_kwargs) }}</th>
-                    <th>{{ sortable_header('Nhóm', 'category', sort, order, 'products.list', filter_kwargs) }}</th>
-                    <th style="width:110px;">{{ sortable_header('Ngày tạo', 'created_at', sort, order, 'products.list', filter_kwargs) }}</th>
-                    {% if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') %}
-                    <th style="width:130px;">Thao tác</th>
+                    <th style="width:50px;" class="text-muted small fw-semibold">{{ sortable_header('#', 'id', sort, order, 'products.list', filter_kwargs) }}</th>
+                    <th style="width:45px;" class="text-center small fw-semibold">Ảnh</th>
+                    <th class="small fw-semibold">{{ sortable_header('Tên sản phẩm', 'name', sort, order, 'products.list', filter_kwargs) }}</th>
+                    <th style="width:110px;" class="small fw-semibold text-end">{{ sortable_header('Giá', 'price', sort, order, 'products.list', filter_kwargs) }}</th>
+                    <th style="width:90px;" class="small fw-semibold text-center">{{ sortable_header('Số lượng', 'quantity', sort, order, 'products.list', filter_kwargs) }}</th>
+                    <th style="width:130px;" class="small fw-semibold">{{ sortable_header('Nhóm', 'category', sort, order, 'products.list', filter_kwargs) }}</th>
+                    <th style="width:110px;" class="small fw-semibold">{{ sortable_header('Ngày tạo', 'created_at', sort, order, 'products.list', filter_kwargs) }}</th>
+                    {% if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') or current_user.has_permission('inventory.view') %}
+                    <th style="width:120px;" class="text-center small fw-semibold">Thao tác</th>
                     {% endif %}
                 </tr>
             </thead>
@@ -104,53 +154,73 @@
                 {% for product in pagination.items %}
                 <tr>
                     <td class="text-muted small">{{ product.id }}</td>
-                    <td>
-                        <span class="fw-semibold small">{{ product.name }}</span>
-                    </td>
-                    <td>{{ "{:,.0f}".format(product.price) }}đ</td>
-                    <td>
-                        {% if product.quantity == 0 %}
-                        <span class="badge bg-danger">Hết</span>
-                        {% elif product.quantity <= 10 %}
-                        <span class="badge bg-warning text-dark">{{ product.quantity }}</span>
+                    <td class="text-center">
+                        {% if product.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                             alt="{{ product.name }}" class="rounded"
+                             style="width:36px;height:36px;object-fit:cover;"
+                             loading="lazy">
                         {% else %}
-                        {{ product.quantity }}
+                        <span class="text-muted"><i class="fas fa-image fa-lg"></i></span>
                         {% endif %}
                     </td>
-                    <td><span class="badge bg-secondary">{{ product.category.name }}</span></td>
+                    <td>
+                        <span class="fw-semibold">{{ product.name }}</span>
+                    </td>
+                    <td class="text-end text-nowrap fw-medium">{{ "{:,.0f}".format(product.price) }}<span class="text-muted ms-1">đ</span></td>
+                    <td class="text-center">
+                        {% if product.quantity == 0 %}
+                        <span class="badge bg-danger px-2 py-1">Hết hàng</span>
+                        {% elif product.quantity <= 10 %}
+                        <span class="badge bg-warning text-dark px-2 py-1">{{ product.quantity }}</span>
+                        {% else %}
+                        <span class="badge bg-success bg-opacity-10 text-success px-2 py-1">{{ product.quantity }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary px-2 py-1">{{ product.category.name }}</span></td>
                     <td class="small text-muted">
                         {{ product.created_at.strftime('%d/%m/%Y') if product.created_at else '' }}
                     </td>
-                    {% if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') %}
-                    <td>
-                        {% if current_user.has_permission('inventory.view') %}
-                        <a href="{{ url_for('inventory.product_history', product_id=product.id) }}"
-                           class="btn btn-sm btn-outline-info" title="Lịch sử kho">
-                            <i class="fas fa-warehouse"></i>
-                        </a>
-                        {% endif %}
-                        {% if current_user.has_permission('products.edit') %}
-                        <a href="{{ url_for('products.edit', id=product.id) }}" class="btn btn-sm btn-warning" title="Sửa">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        {% endif %}
-                        {% if current_user.has_permission('products.delete') %}
-                        <form action="{{ url_for('products.delete', id=product.id) }}" method="POST" class="d-inline"
-                              onsubmit="return confirm('Xóa sản phẩm này?')">
-                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                        {% endif %}
+                    {% if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') or current_user.has_permission('inventory.view') %}
+                    <td class="text-center">
+                        <div class="d-flex gap-1 justify-content-center">
+                            {% if current_user.has_permission('inventory.view') %}
+                            <a href="{{ url_for('inventory.product_history', product_id=product.id) }}"
+                               class="btn btn-sm btn-outline-info" title="Lịch sử kho">
+                                <i class="fas fa-warehouse"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.has_permission('products.edit') %}
+                            <a href="{{ url_for('products.edit', id=product.id) }}" class="btn btn-sm btn-outline-warning" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.has_permission('products.delete') %}
+                            <form action="{{ url_for('products.delete', id=product.id) }}" method="POST" class="d-inline"
+                                  onsubmit="return confirm('Xóa sản phẩm &quot;{{ product.name }}&quot;?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                     {% endif %}
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="{{ '7' if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') else '6' }}"
-                        class="text-center text-muted py-4">
-                        <i class="fas fa-boxes fa-2x mb-2 d-block"></i>
-                        Chưa có sản phẩm nào.
+                    <td colspan="{{ '8' if current_user.has_permission('products.edit') or current_user.has_permission('products.delete') or current_user.has_permission('inventory.view') else '7' }}"
+                        class="text-center text-muted py-5">
+                        <i class="fas fa-boxes fa-3x mb-3 d-block text-light"></i>
+                        <p class="mb-0">
+                            {% if has_filter %}
+                            Không tìm thấy sản phẩm phù hợp.
+                            <br><a href="{{ url_for('products.list') }}" class="text-decoration-none">Xóa bộ lọc</a>
+                            {% else %}
+                            Chưa có sản phẩm nào.
+                            <br><a href="{{ url_for('products.add') }}" class="text-decoration-none">Thêm sản phẩm đầu tiên</a>
+                            {% endif %}
+                        </p>
                     </td>
                 </tr>
                 {% endfor %}
@@ -158,7 +228,7 @@
         </table>
     </div>
     {% if pagination.pages > 1 %}
-    <div class="card-footer bg-white py-3">
+    <div class="card-footer bg-white py-2">
         {{ render_pagination(pagination, 'products.list', sort, order, per_page, filter_kwargs) }}
     </div>
     {% endif %}

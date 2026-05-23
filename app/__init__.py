@@ -67,6 +67,10 @@ def create_app(config_name=None):
             supported_languages=SUPPORTED_LANGUAGES,
         )
 
+    # Ensure upload directory exists
+    os.makedirs(os.path.join(app.root_path, '..', 'static', 'uploads'),
+                exist_ok=True)
+
     with app.app_context():
         from app.models import User, Category, Product, AuditLog, StockTransaction  # noqa: F401
         db.create_all()
@@ -94,8 +98,14 @@ def create_app(config_name=None):
                 'ALTER TABLE users ADD COLUMN google_id VARCHAR(100)'))
             db.session.commit()
 
-        # Add created_at/updated_at to products if missing
+        # Add image column to products if missing
         prod_cols = [c['name'] for c in inspector.get_columns('products')]
+        if 'image' not in prod_cols:
+            db.session.execute(text(
+                'ALTER TABLE products ADD COLUMN image VARCHAR(255)'))
+            db.session.commit()
+
+        # Add created_at/updated_at to products if missing
         if 'created_at' not in prod_cols:
             from datetime import datetime, timezone
             db.session.execute(text(
